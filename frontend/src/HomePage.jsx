@@ -77,7 +77,7 @@ function SpellingGame() {
   //fetch details from backend
     const fetchGameData = async () => {
       try {
-        const response = await fetch("/api/startgame", {
+        const response = await fetch("https://oclearn.onrender.com/api/startgame", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${sessionStorage.getItem("token")}`,
