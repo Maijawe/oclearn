@@ -164,7 +164,7 @@ function SpellingGame() {
     }
   
     try {
-      const response = await fetch("oclearn.onrender.com/api/updatecipher", {
+      const response = await fetch("https://oclearn.onrender.com/api/updatecipher", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -255,7 +255,7 @@ function SpellingGame() {
           console.log("data level Words: "+details.wordsIknow);
         
           try {
-            const response = await fetch("oclearn.onrender.com/api/senddata", {
+            const response = await fetch("https://oclearn.onrender.com/api/senddata", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -649,7 +649,7 @@ function SpellingGame() {
   return (
     <Container className="text-center mt-5">
       <Card className="p-4">
-      <h1>Word wordWizard</h1>
+      <h1>Word Wizard</h1>
         
 
 
