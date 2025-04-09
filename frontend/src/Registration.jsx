@@ -58,7 +58,7 @@ function Register() {
 
 
     try {
-      const response = await fetch("http://192.168.18.234:5000/api/register", {
+      const response = await fetch("https://oclearn.onrender.com/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json", // ✅ This is required
