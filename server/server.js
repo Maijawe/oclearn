@@ -13,7 +13,7 @@ const axios = require('axios');
 const path = require("path");
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 dotenv.config();
 app.use(cors());// for listening to react requests on port 3000
