@@ -198,7 +198,7 @@ function SpellingGame() {
         console.log(`Token streak ${token}`)
         if (!token) throw new Error("User not authenticated");
   
-        const response = await fetch("/api/updatestreak", {
+        const response = await fetch("https://oclearn.onrender.com/api/updatestreak", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`, // Send token
