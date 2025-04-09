@@ -1,0 +1,175 @@
+.centered-div{
+margin-left: 20px;
+}
+
+.home-div{
+    padding-top: 100px;
+}
+.sm-title{
+    color: darkblue;
+    font-size: large;
+    padding-bottom: 10px; 
+    font-style: 'Roboto';
+}
+.input{
+  width: 600px;
+  margin-left: 370px;
+}
+
+
+.bg-title{
+    color: darkblue;
+    font-style: 'Roboto';
+}
+.paragraph{
+    font-size: x-small;
+}
+.pic1{
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+.steps{
+    font-size: smaller;
+}
+.socioLogo{
+margin-left: 120px;
+margin-top: 20px;
+margin-bottom: 20px;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  nav{
+    padding-top: 20px;
+  }
+  
+  nav ul li {
+    display: inline-block;
+  }
+  
+  nav ul li a {
+    display: block;
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #333;
+    background-color: #f0f0f0;
+  }
+  
+  nav ul li a:hover {
+    background-color: #ccc;
+  }
+  .top-third {
+    background-color: #FFE933; /* Bootstrap secondary background color */
+    border-radius: 20px;
+  }
+  .socio{
+    padding-top: 20px;
+  }
+  .profile{
+    padding-top: 20px;
+    padding-bottom: 30px;
+  }
+  .span{
+    padding-left: 20px;
+  }
+  .square-button {
+    width: 130px; /* Adjust width to make it square */
+    height: 130px; /* Adjust height to make it square */
+    padding: 0; /* Remove padding to make the button square */
+    border: none; /* Remove border */
+    color: black; /* Button text color (white) */
+    font-size: 20px; /* Icon size */
+
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Shadow */
+  }
+  .square-button:hover {
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08); /* Larger shadow on hover*/
+  } 
+  
+  
+  .square-button .icon {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 50px; /* Center the icon vertically */
+    text-align: center;
+  }
+  .center-horizontally {
+    padding-top: 20px;
+    display: flex;
+    justify-content: center;
+  }
+  .container-fluid{
+    padding-top: 10px;
+  }
+  .brick{
+    display: flex; 
+    justify-content: center;
+    align-items: center; 
+    height: 100vh;
+  }
+  .subs{
+    text-align: center;
+  }
+  body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding-bottom: 10px;
+    
+  }
+  .title2{
+    color: red;
+  }
+  .carousel-image {
+    width: 300px;
+    height: 300px;
+    object-fit: cover; /* Ensures the image covers the entire area */
+    border-radius: 15px; /* Adjust this value to make the edges more or less curvy */
+  }
+
+  .carousel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 20px;
+  }
+  
+  .carousel-image {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 15px;
+  }
+
+  .carousel-button{
+    margin-top: 10px;
+  }
+  
+
+@media (max-width: 767px) {
+    .in-process{
+      width: 350px;
+      height: 150px;
+      margin-top: 30px;
+  
+    }
+    .link {
+      display: inline-block; /* Display as inline block */
+      margin-bottom: 10px;
+      margin-top: 10px;
+      width: 255px;
+      /* Add some spacing between the links */
+   
+      vertical-align: top; /* Align links to the top */
+    }
+  }
