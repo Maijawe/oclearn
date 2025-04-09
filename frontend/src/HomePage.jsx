@@ -164,7 +164,7 @@ function SpellingGame() {
     }
   
     try {
-      const response = await fetch("http://192.168.18.234:5000/api/updatecipher", {
+      const response = await fetch("oclearn.onrender.com/api/updatecipher", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -255,7 +255,7 @@ function SpellingGame() {
           console.log("data level Words: "+details.wordsIknow);
         
           try {
-            const response = await fetch("http://192.168.18.234:5000/api/senddata", {
+            const response = await fetch("oclearn.onrender.com/api/senddata", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
