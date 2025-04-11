@@ -17,9 +17,9 @@ const port = process.env.PORT || 5000;
 
 dotenv.config();
 app.use(cors());// for listening to react requests on port 3000
-//app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json()); // for parsing JSON requests
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, "../frontend/build")));
 const Analytics = require("./analyticsModel");
 
 // Serve static files from the React frontend
@@ -30,7 +30,7 @@ const upload = multer({ dest: 'uploads/' });
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-});
+}); 
 
 
 
@@ -69,9 +69,6 @@ const updateStreak = async (userId) => {
   await user.save();
 };
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/build/index.html"));
-});
 
 app.post("/api/updatecipher", authenticateToken, async (req, res) => {
   try {
@@ -342,6 +339,10 @@ app.post("/api/register", async (req, res) => {
     console.error("Registration error:", error);
     res.status(500).json({ message: "Something went wrong. Please try again later." });
   }
+});
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/build", "index.html"));
 });
 
 app.listen(port, () => {
