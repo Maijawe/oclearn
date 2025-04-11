@@ -12,10 +12,10 @@ function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const loginRes = await fetch("http://localhost:5000/api/analytics/daily-logins");
+        const loginRes = await fetch("https://oclearn.onrender.com/api/analytics/daily-logins");
         const loginData = await loginRes.json();
 
-        const level3Res = await fetch("http://localhost:5000/api/analytics/level3-completions");
+        const level3Res = await fetch("https://oclearn.onrender.com/api/analytics/level3-completions");
         const level3Data = await level3Res.json();
 
         setStats({
