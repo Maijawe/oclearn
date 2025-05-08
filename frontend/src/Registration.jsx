@@ -11,6 +11,7 @@ function Register() {
     username: "",
     pin: "",
     parentContact: "",
+    parentEmail: "",
   });
 
   const [contract, setContract] = useState(false);
@@ -31,12 +32,13 @@ function Register() {
     event.preventDefault();
 
 
-    const { name, username, pin, parentContact } = data;
+    const { name, username, pin, parentContact,parentEmail } = data;
 
     console.log("Name:", `"${name}"`);
     console.log("Username:", `"${username}"`);
     console.log("PIN:", `"${pin}"`);
     console.log("Parent Contact:", `"${parentContact}"`);
+    console.log("Parent Email:", `"${parentEmail}"`);
 
     if (!name.trim() || !username.trim() || !pin.trim()) {
       alert("Please fill in all required fields (name, username, pin)");
@@ -44,7 +46,12 @@ function Register() {
     }
     
     if (!parentContact.trim()) {
-      alert("Please enter a parent contact number or email.");
+      alert("Please enter a parent contact number.");
+      return;
+    }
+        
+    if (!parentEmail.trim()) {
+      alert("Please enter a parent email.");
       return;
     }
     
@@ -68,6 +75,7 @@ function Register() {
           username,
           pin,
           parentContact,
+          parentEmail
         }),
       });
 
@@ -154,14 +162,27 @@ function Register() {
                   />
                 </Form.Group>
 
+                <h2>Parents Details</h2>
+
                 <Form.Group className="mb-3 input2">
-                  <Form.Label>Parent Contact (Email or Phone)</Form.Label>
+                  <Form.Label>Parent Contact </Form.Label>
                   <Form.Control
                     type="tel"
                     name="parentContact"
                     value={data.parentContact}
                     onChange={handleInputChange}
                     placeholder="Enter parent's contact"
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3 input2">
+                  <Form.Label>Parent Email</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="parentEmail"
+                    value={data.parentEmail}
+                    onChange={handleInputChange}
+                    placeholder="Enter parent's email"
                   />
                 </Form.Group>
 

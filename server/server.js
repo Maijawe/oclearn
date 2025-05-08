@@ -11,6 +11,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const path = require("path");
+const sendReminderEmail = require('./emailReminder');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -25,12 +26,15 @@ const Analytics = require("./analyticsModel");
 // Serve static files from the React frontend
 app.use(express.static(path.join(__dirname, "../frontend/build")));
 
+
+
 const upload = multer({ dest: 'uploads/' });
 //mongoose.connect('mongodb://127.0.0.1/aiLMSDatabase', { useNewUrlParser: true});
-mongoose.connect(process.env.MONGO_URI, {
+ mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }); 
+
 
 
 
@@ -68,6 +72,31 @@ const updateStreak = async (userId) => {
   user.lastLoginDate = today;
   await user.save();
 };
+
+app.get("/api/send-reminders", async (req, res) => {
+  console.log("reminder route is triggered");
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  try {
+    const learners = await Learner.find();
+
+    for (const learner of learners) {
+      const lastLogin = learner.lastLoginDate?.toISOString().slice(0, 10);
+      if (lastLogin !== today && learner.parentEmail) {
+        await sendReminderEmail(learner.parentEmail, learner.name);
+      }
+      console.log(`📧 ${learner.name} missed today. Email sent to: ${learner.parentEmail}`);
+    }
+
+    res.status(200).json({ message: "Reminders sent successfully!" });
+  } catch (err) {
+    console.error("Error sending reminders:", err);
+    res.status(500).json({ error: "Failed to send reminders" });
+  }
+});
+
+
 
 
 app.post("/api/updatecipher", authenticateToken, async (req, res) => {
@@ -321,10 +350,10 @@ app.post("/api/login", async (req, res) => {
 
 
 app.post("/api/register", async (req, res) => {
-  const { name, username, pin, parentContact } = req.body;
+  const { name, username, pin, parentContact , parentEmail } = req.body;
 
   // Basic validation
-  if (!name || !username || !pin || !parentContact) {
+  if (!name || !username || !pin || !parentContact || !parentEmail) {
     return res.status(400).json({ message: "Please fill in all required fields." });
   }
 
@@ -344,6 +373,7 @@ app.post("/api/register", async (req, res) => {
       username:username,
       pin: hashedPin,
       contacts: parentContact,
+      parentEmail : parentEmail
     });
 
     await learner.save();

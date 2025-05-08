@@ -15,6 +15,10 @@ const learnerSchema = new mongoose.Schema({
       required: true,
       unique: true, 
     },
+    parentEmail: {
+      type: String,
+      required: true,
+    },
     resetToken: {
       type: String,
       default: null,
@@ -37,7 +41,7 @@ const learnerSchema = new mongoose.Schema({
     cipherStreak: 
     { 
       type: Number,
-      default: 0 
+      default: 1 
     },
     
     lastLoginDate:
