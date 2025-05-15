@@ -74,7 +74,16 @@ const learnerSchema = new mongoose.Schema({
     }],
     
    
-    isAuthenticated :Boolean 
+    isAuthenticated :Boolean ,
+
+    sessions: [
+    {
+      duration: {
+      type: Number, // in seconds
+      required: true,
+    }
+    }
+  ]
     
     });
     const Learner = mongoose.model('learner', learnerSchema);
@@ -113,8 +122,26 @@ const learnerSchema = new mongoose.Schema({
 
 const LevelWords = mongoose.model('level_words', levelWordsSchema);
 
+const dailyAnalyticsSchema = new mongoose.Schema({
+  date: { type: String, required: true, unique: true }, // YYYY-MM-DD
+
+  dailyActiveUsers: Number,
+
+  streakCohorts: {
+    under3: Number,
+    between3And20: Number,
+    between21And40: Number,
+    over40: Number,
+  },
+
+  averageSessionDuration: Number, // in seconds
+});
+const DailyAnalytics = mongoose.model('daily_analytics', dailyAnalyticsSchema);
+
+
     module.exports = {
         Learner,
-        LevelWords
+        LevelWords,
+        DailyAnalytics
 
       };

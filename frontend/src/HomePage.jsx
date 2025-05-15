@@ -357,11 +357,35 @@ function SpellingGame() {
       if (isDataFetched && levelWords.length === 0) {
         setGameWon(true);
         setMessage("🎉 You won the game!");
+
+        const sessionStart = sessionStorage.getItem("sessionStartTime");
+        if (sessionStart) {
+        const duration = Math.floor((Date.now() - parseInt(sessionStart)) / 1000);
+        console.log("Session Duration:", duration, "seconds");
+
+        // Send to backend
+        const token = sessionStorage.getItem("token");
+        fetch(`${process.env.REACT_APP_API_URL}/api/session/end`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ duration }),
+        });
+
+        // Optional cleanup
+        sessionStorage.removeItem("sessionStartTime");
+}
+
+
       }
     }, [levelWords]);
 
   
 const startGame = async () => {
+  // Start timer when game begins
+  sessionStorage.setItem("sessionStartTime", Date.now());
   console.log("🚀 Starting game...");
   setIsLoading(true);
 
@@ -660,33 +684,6 @@ if (data.levelAvailable === false) {
   
   
 
-
-  if (level === 4) {
-    return (
-      <Container className="text-center mt-5">
-        <Card className="p-4">
-          <h2>🎉 Congratulations on Completing Level 3!</h2>
-          <p>
-            You've conquered the last available level for now.
-            <br />
-            🚀 Level 4 is coming soon with new challenges and surprises!
-          </p>
-          <img
-            src={level4ComingSoon} // optional image
-            alt="Level Complete"
-            style={{ maxWidth: "250px", margin: "20px auto" }}
-          />
-          <Button
-            className="mt-3"
-            variant="primary"
-            onClick={() => navigate("/")}
-          >
-            Back to Home
-          </Button>
-        </Card>
-      </Container>
-    );
-  }
 
 
   return (

@@ -38,7 +38,7 @@ const upload = multer({ dest: 'uploads/' });
 
 
 
-const { Learner, LevelWords} = require('./databse');
+const { Learner, LevelWords,DailyAnalytics} = require('./databse');
 
 const updateStreak = async (userId) => {
   const user = await Learner.findById(userId); // Ensure correct model name
@@ -288,6 +288,100 @@ app.get('/api/analytics/daily-logins', async (req, res) => {
     res.status(500).json({ message: "Error getting daily active users" });
   }
 });
+
+app.get("/api/analytics/daily-snapshot", async (req, res) => {
+  try {
+    // Get today's full date range
+    const start = new Date();
+    start.setHours(0, 0, 0, 0); // 00:00:00.000
+
+    const end = new Date();
+    end.setHours(23, 59, 59, 999); // 23:59:59.999
+
+    const todayString = start.toISOString().slice(0, 10); // "YYYY-MM-DD"
+
+    // ✅ Get today's active users using date range
+    const dailyUsers = await Learner.find({
+      lastLoginDate: { $gte: start, $lte: end }
+    });
+
+    const dailyActiveUsers = dailyUsers.length;
+
+    // ✅ Streak cohorts
+    let under3 = 0, between3And20 = 0, between21And40 = 0, over40 = 0;
+
+    const allLearners = await Learner.find();
+
+    allLearners.forEach((l) => {
+      const s = l.streak || 0;
+      if (s < 3) under3++;
+      else if (s >= 3 && s <= 20) between3And20++;
+      else if (s >= 21 && s <= 40) between21And40++;
+      else over40++;
+    });
+
+    // ✅ Average session duration
+    let totalDuration = 0;
+    let totalSessions = 0;
+
+    allLearners.forEach((l) => {
+      if (Array.isArray(l.sessions)) {
+        l.sessions.forEach((s) => {
+          totalDuration += s.duration || 0;
+          totalSessions++;
+        });
+      }
+    });
+
+    const averageSessionDuration =
+      totalSessions > 0 ? Math.round(totalDuration / totalSessions) : 0;
+
+    // ✅ Save analytics snapshot
+    await DailyAnalytics.findOneAndUpdate(
+      { date: todayString },
+      {
+        date: todayString,
+        dailyActiveUsers,
+        streakCohorts: { under3, between3And20, between21And40, over40 },
+        averageSessionDuration
+      },
+      { upsert: true }
+    );
+
+    res.json({
+      message: "Analytics snapshot saved",
+      data: {
+        date: todayString,
+        dailyActiveUsers,
+        streakCohorts: { under3, between3And20, between21And40, over40 },
+        averageSessionDuration
+      }
+    });
+  } catch (error) {
+    console.error("Error generating daily analytics:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+app.post("/api/session/end", authenticateToken, async (req, res) => {
+  try {
+    const { duration } = req.body;
+    if (!duration) return res.status(400).json({ error: "Missing duration" });
+
+    const learner = await Learner.findById(req.userId);
+    if (!learner) return res.status(404).json({ error: "Learner not found" });
+
+    learner.sessions.push({ duration });
+    await learner.save();
+
+    res.json({ message: "Session duration saved" });
+  } catch (err) {
+    console.error("Error saving session duration:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 
 app.post("/api/levels", async (req, res) => {
