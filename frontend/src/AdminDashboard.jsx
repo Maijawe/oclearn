@@ -1,40 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { Container, Table, Spinner, Form, Button, Alert } from "react-bootstrap";
 
+
 function AdminDashboard() {
-  const [stats, setStats] = useState({
-    date: "",
-    dailyUsers: null,
-    level3Completions: null,
-  });
+
   const [loading, setLoading] = useState(true);
   const [level, setLevel] = useState("");
   const [words, setWords] = useState([""]);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const [analyticsData, setAnalyticsData] = useState([]);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const loginRes = await fetch(`${process.env.REACT_APP_API_URL}/api/analytics/daily-logins`);
-        const loginData = await loginRes.json();
 
-        const level3Res = await fetch(`${process.env.REACT_APP_API_URL}/api/analytics/level3-completions`);
-        const level3Data = await level3Res.json();
+useEffect(() => {
+  const fetchAllAnalytics = async () => {
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/analytics/all`);
+      const data = await res.json();
+      setAnalyticsData(data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching all analytics:", err);
+      setLoading(false);
+    }
+  };
 
-        setStats({
-          date: loginData.date,
-          dailyUsers: loginData.dailyActiveUsers,
-          level3Completions: level3Data.level3Completions,
-        });
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching analytics:", err);
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, []);
+  fetchAllAnalytics();
+}, []);
 
   const handleAddLevel = async (e) => {
     e.preventDefault();
@@ -77,22 +68,33 @@ function AdminDashboard() {
           <Spinner animation="border" />
         </div>
       ) : (
-        <Table bordered hover responsive className="text-center">
-          <thead className="table-dark">
-            <tr>
-              <th>📅 Date</th>
-              <th>👤 Daily Users</th>
-              <th>✅ Level 3 Completions</th>
+      <Table bordered hover responsive className="text-center mt-4">
+        <thead className="table-dark">
+          <tr>
+            <th>📅 Date</th>
+            <th>👤 Daily Users</th>
+            <th>⏱ Avg Session (s)</th>
+            <th>🔥 Streak: &lt;3</th>
+            <th>🔥 Streak: 3–20</th>
+            <th>🔥 Streak: 21–40</th>
+            <th>🔥 Streak: &gt;40</th>
+          </tr>
+        </thead>
+        <tbody>
+          {analyticsData.map((entry) => (
+            <tr key={entry._id}>
+              <td>{entry.date}</td>
+              <td>{entry.dailyActiveUsers}</td>
+              <td>{entry.averageSessionDuration}</td>
+              <td>{entry.streakCohorts?.under3 || 0}</td>
+              <td>{entry.streakCohorts?.between3And20 || 0}</td>
+              <td>{entry.streakCohorts?.between21And40 || 0}</td>
+              <td>{entry.streakCohorts?.over40 || 0}</td>
             </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{stats.date}</td>
-              <td>{stats.dailyUsers}</td>
-              <td>{stats.level3Completions}</td>
-            </tr>
-          </tbody>
-        </Table>
+          ))}
+        </tbody>
+      </Table>
+
       )}
 
       <hr />

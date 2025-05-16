@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, "../frontend/build")));
 
 const upload = multer({ dest: 'uploads/' });
 //mongoose.connect('mongodb://127.0.0.1/aiLMSDatabase', { useNewUrlParser: true});
- mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }); 
@@ -360,6 +360,15 @@ app.get("/api/analytics/daily-snapshot", async (req, res) => {
   } catch (error) {
     console.error("Error generating daily analytics:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.get("/api/analytics/all", async (req, res) => {
+  try {
+    const analytics = await DailyAnalytics.find({}).sort({ date: -1 }); // newest first
+    res.json(analytics);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
 });
 
