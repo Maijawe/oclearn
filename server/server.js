@@ -41,28 +41,28 @@ mongoose.connect(process.env.MONGO_URI, {
 const { Learner, LevelWords,DailyAnalytics} = require('./databse');
 
 const updateStreak = async (userId) => {
-  const user = await Learner.findById(userId); // Ensure correct model name
-  if (!user) return console.log("User not found");
+  const user = await Learner.findById(userId);
+  if (!user) return { streakReset: false, user: null };
 
   const lastLogin = new Date(user.lastLoginDate);
   const today = new Date();
-  
+
   const lastDate = new Date(lastLogin.getFullYear(), lastLogin.getMonth(), lastLogin.getDate());
   const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  
-  // Calculate difference in days
-  const diffInTime = todayDate.getTime() - lastDate.getTime();
-  const diffInDays = diffInTime / (1000 * 3600 * 24);
 
+  const diffInDays = (todayDate - lastDate) / (1000 * 3600 * 24);
   console.log(`Difference in days: ${diffInDays}`);
 
+  let streakReset = false;
+
   if (diffInDays > 1) {
-    user.streak = 1; // Reset streak
-    user.cipherStreak = 1
+    user.streak = 1;
+    user.cipherStreak = 1;
+    streakReset = true;
     console.log("User missed a day. Streak reset to 1.");
   } else if (diffInDays === 1) {
-    user.streak += 1; // Increment streak
-    user.cipherStreak +=1
+    user.streak += 1;
+    user.cipherStreak += 1;
     console.log(`Streak increased! Current streak: ${user.streak}`);
   } else {
     console.log("User already logged in today.");
@@ -70,7 +70,10 @@ const updateStreak = async (userId) => {
 
   user.lastLoginDate = today;
   await user.save();
+
+  return { streakReset, user };
 };
+
 
 app.get("/api/send-reminders", async (req, res) => {
   console.log("reminder route is triggered");
@@ -234,15 +237,23 @@ app.get("/api/updatestreak", authenticateToken, async (req, res) => {
   console.log(`UserId: ${userId}`);
 
   try {
-    await updateStreak(userId);
-    const updatedUser = await Learner.findById(userId); // Ensure correct model name
-    console.log(`Streak is: ${updatedUser.streak} and cipherStreak is ${updatedUser.cipherStreak}`);
-    res.status(200).json({ streak: updatedUser.streak , cipherStreak : updatedUser.cipherStreak });
+    const { streakReset, user } = await updateStreak(userId);
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    console.log(`Streak is: ${user.streak}, CipherStreak: ${user.cipherStreak}, Streak Reset: ${streakReset}`);
+
+    res.status(200).json({
+      streak: user.streak,
+      cipherStreak: user.cipherStreak,
+      streakReset, // 🔥 now returned to frontend
+    });
   } catch (error) {
     console.error("Error updating streak:", error);
     res.status(500).json({ error: "Failed to update streak" });
   }
 });
+
 
 
 app.get('/api/analytics/level3-completions', async (req, res) => {
