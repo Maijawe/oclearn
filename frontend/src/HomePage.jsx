@@ -5,6 +5,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./home2.css"; // Import custom styles
 import incorrectSound from "./sounds/wrong.mp3";
 import cipherKeyImage from "./images/cipherKey.jpg";
+import sadStreakImage from "./images/sadStreak.png";
+import happyStreak from "./images/happyStreak.png";
+import starImage_2 from "./images/star.png";
+import trophyImage from "./images/trophy.png";
 import starImage from "./images/goldenStar.jpg";
 import correctSound from "./sounds/success.mp3";
 import winner from "./sounds/winner.wav";
@@ -59,14 +63,50 @@ function SpellingGame() {
  
 
     // Modal controls
-    const [showStreakModal, setShowStreakModal] = useState(false);
+    const [showStreakCelebrationModal, setShowStreakCelebrationModal] = useState(false);
     const [showStarsTotalModal, setShowStarsTotalModal] = useState(false);
     const [showHighestStarsModal, setShowHighestStarModal] = useState(false);
     const [showStreakLostModal, setShowStreakLostModal] = useState(false);
+    const [showRestartStreakModal, setShowRestartStreakModal] = useState(false);
+    
     const [isLoading, setIsLoading] = useState(false);
 
     
 
+//modal voice-over
+const modalVoiceOver = (text) => {
+ window.speechSynthesis.cancel(); // 🔇 Stop previous voice
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'en-US';
+  utterance.pitch = 1.2;
+  utterance.rate = 0.85; // Slower for young learners
+  window.speechSynthesis.speak(utterance);
+};
+
+useEffect(() => {
+  if (showStreakCelebrationModal) {
+    modalVoiceOver(`Wow! You've played ${streak} days in a row!`);
+  }
+}, [showStreakCelebrationModal]);
+
+useEffect(() => {
+  if (showHighestStarsModal) {
+    modalVoiceOver(`Your best score is ${highestStars} stars. Today, you got ${currentDailyStars} stars.`);
+  }
+}, [showHighestStarsModal]);
+
+useEffect(() => {
+  if (showStarsTotalModal) {
+    modalVoiceOver(`You have ${stars} stars! Keep going!`);
+  }
+}, [showStarsTotalModal]);
+
+useEffect(() => {
+  if (showStreakLostModal) {
+    modalVoiceOver("Oh no! You missed a day. Your fire is gone.");
+  }
+}, [showStreakLostModal]);
 
 
 
@@ -234,7 +274,7 @@ function SpellingGame() {
         setIsDataFetched(false); 
 
       
-        setShowStreakModal(true);
+        setShowHighestStarModal(true);
   
 
    
@@ -703,23 +743,46 @@ if (data.levelAvailable === false) {
 
 
 
+      <Modal show={showStreakLostModal} onHide={() => setShowStreakLostModal(false)} centered backdrop="static" keyboard={false}>
+        <Modal.Header className="justify-content-center border-0">
+          <Modal.Title className="fs-1 text-danger">💔 Uh-oh!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <p className="fs-2">Your fire is gone... 🔥❌</p>
+          <Image src={sadStreakImage} alt="streak lost" fluid style={{ maxHeight: '140px' }} className="my-3" />
+          <p className="fs-3 text-secondary">You missed a day 😢</p>
+          <div className="fs-1">💧💧💧</div>
+        </Modal.Body>
+        <Modal.Footer className="justify-content-center border-0">
+          <Button variant="warning" size="lg" onClick={() => {
+            setShowStreakLostModal(false);
+            setShowRestartStreakModal(true);
+          }}>
+            Next ➡️
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
-        <Modal show={showStreakLostModal} onHide={() => setShowStreakLostModal(false)} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>⏰ You Missed a Day</Modal.Title>
-      </Modal.Header>
-      <Modal.Body className="text-center">
-        <p>Oops! You didn’t play yesterday 😢</p>
-        <p>Your <strong>streak</strong> has started again from <strong>1</strong>.</p>
-        <p>Come back tomorrow to start building it up again! 🔥</p>
-        <div className="fs-1">💪🔥📆</div>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="primary" onClick={() => setShowStreakLostModal(false)}>
-          Let's Go!
-        </Button>
-      </Modal.Footer>
-    </Modal>
+
+
+      <Modal show={showRestartStreakModal} onHide={() => setShowRestartStreakModal(false)} centered backdrop="static" keyboard={false}>
+        <Modal.Header className="justify-content-center border-0">
+          <Modal.Title className="fs-1 text-success">🌱 New Start!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <p className="fs-2">You can grow a new fire! 🔥</p>
+          <Image src={happyStreak} alt="new flame" fluid style={{ maxHeight: '130px' }} className="my-3" />
+          <p className="fs-4">Play today to begin again 💪</p>
+        </Modal.Body>
+        <Modal.Footer className="justify-content-center border-0">
+          <Button variant="primary" size="lg" onClick={() => {
+            setShowRestartStreakModal(false);
+          }}>
+            Got it! 👍
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
 
 
 
@@ -774,7 +837,7 @@ if (data.levelAvailable === false) {
         {/* Modal for cipherLottery */}
         <Modal show={showCipherModal} onHide={() => setShowCipherModal(false)} centered backdrop="static" keyboard={false}>
         <Modal.Header closeButton>
-        <Modal.Title>🔐 Read My Mind To Win A Chipher Key</Modal.Title>
+        <Modal.Title>🔐 Cipher Lottery</Modal.Title>
         </Modal.Header>
         <Modal.Body>
         <p>Which number am i thinking between 1 and 5:</p>
@@ -866,69 +929,83 @@ if (data.levelAvailable === false) {
           <div>
 
             <div>
-              {/* Streak Modal */}
-              <Modal show={showStreakModal} onHide={() => setShowStreakModal(false)} centered backdrop="static" keyboard={false}>
-                <Modal.Header>
-                  <Modal.Title className="fs-3">🔥 Streak Alert! 🔥</Modal.Title>
-                </Modal.Header>
-                <Modal.Body className="text-center">
-                  <p className="fs-4">You’ve played <strong>{streak}</strong> days in a row! 🎉</p>
-                  <p className="fs-4">Your streak = <strong>{streak}</strong></p>
-                  <p className="fs-5">Play again tomorrow to keep your streak 🔥</p>
-                  <p className="text-success"><strong>2 days = unlock cipher lottery! 🎁🔑</strong></p>
-                  <div className="mt-3 fs-1">🔥🔥🔥</div>
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button variant="primary" onClick={() => {
-                    setShowStreakModal(false);
-                    setShowHighestStarModal(true);
-                  }}>
-                    Got it!
-                  </Button>
-                </Modal.Footer>
-              </Modal>
+
 
 
                                   {/* Streak Modal */}
-          <Modal show={showHighestStarsModal}  onHide={() => setShowHighestStarModal(false)} centered backdrop="static" keyboard={false}>
-            <Modal.Header>
-              <Modal.Title className="fs-3">Your record 🏆</Modal.Title>
-            </Modal.Header>
-          <Modal.Body className="text-center">
-            <p className="fs-5">🏆 Your Best Ever: <strong>{highestStars} stars</strong></p>
-            <p>⭐ Today’s Score: <strong>{currentDailyStars} stars</strong></p>
-            <div className="mt-3 fs-1">🏆 🏆 🏆</div>
-          </Modal.Body>
-                <Modal.Footer>
-                <Button variant="primary" onClick={() => {
-                  setShowHighestStarModal(false);
-                  setShowStarsTotalModal(true);
-                  }}>Continue</Button>
-                </Modal.Footer>
-              </Modal>
+<Modal show={showHighestStarsModal} onHide={() => setShowHighestStarModal(false)} centered backdrop="static" keyboard={false}>
+  <Modal.Header className="justify-content-center border-0">
+    <Modal.Title className="fs-1 text-warning">🏆 Your Record!</Modal.Title>
+  </Modal.Header>
+  <Modal.Body className="text-center">
+    <Image src={trophyImage} alt="Trophy" fluid style={{ maxHeight: '140px' }} className="mb-3" />
+    <p className="fs-2 text-dark">⭐ Best: <strong>{highestStars}</strong></p>
+    <p className="fs-2 text-primary">⭐ Today: <strong>{currentDailyStars}</strong></p>
+    <div className="fs-1">🎉🎉🎉</div>
+  </Modal.Body>
+  <Modal.Footer className="justify-content-center border-0">
+    <Button variant="warning" size="lg" onClick={() => {
+      setShowHighestStarModal(false);
+      setShowStarsTotalModal(true);
+    }}>
+      Next ➡️
+    </Button>
+  </Modal.Footer>
+</Modal>
 
 
 
                       {/* Stars Total Modal */}
-        <Modal show={showStarsTotalModal} onHide={() => setShowStarsTotalModal(false)} centered backdrop="static" keyboard={false}>
-          <Modal.Header>
-            <Modal.Title className="fs-3">🌟 Total Stars 🌟</Modal.Title>
-          </Modal.Header>
-          <Modal.Body className="text-center">
-            <p className="fs-5">You have <strong>{stars}</strong> stars!</p>
-            <p>Use them to unlock fun rewards or show off your progress.</p>
-            <div className="mt-3 fs-1">🌟🌟🌟</div>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="success" onClick={async() => {
-              
+<Modal show={showStarsTotalModal} onHide={() => setShowStarsTotalModal(false)} centered backdrop="static" keyboard={false}>
+  <Modal.Header className="justify-content-center border-0">
+    <Modal.Title className="fs-1 text-primary">🌟 Total Stars!</Modal.Title>
+  </Modal.Header>
+  <Modal.Body className="text-center">
+    <Image src={starImage_2} alt="Star Pile" fluid style={{ maxHeight: '130px' }} className="mb-3" />
+    <p className="fs-2">You have</p>
+    <h1 className="display-3 text-warning">{stars} 🌟</h1>
+    <p className="fs-4">Let’s collect more!</p>
+    <div className="fs-1">🌟🌟🌟</div>
+  </Modal.Body>
+  <Modal.Footer className="justify-content-center border-0">
+    <Button variant="success" size="lg" onClick={() => {
+      setShowStarsTotalModal(false);
+      setShowStreakCelebrationModal(true);
+      
+    }}>
+      Got it!! ▶️
+    </Button>
+  </Modal.Footer>
+</Modal>
 
-              setShowStarsTotalModal(false);
-               await startGame(); 
-              
-            }}>Play Next Level</Button>
-          </Modal.Footer>
-        </Modal>
+
+
+
+<Modal show={showStreakCelebrationModal} onHide={()=> setShowStreakCelebrationModal(false)} centered backdrop="static" keyboard={false}>
+  <Modal.Header className="justify-content-center border-0">
+    <Modal.Title className="fs-1 text-warning">🔥 Streak!</Modal.Title>
+  </Modal.Header>
+  <Modal.Body className="text-center">
+    <Image src={happyStreak} alt="Streak Fire" fluid style={{ maxHeight: '150px' }} className="mb-3" />
+    <p className="fs-2">You’ve played</p>
+    <h1 className="display-2 text-danger">{streak} Days</h1>
+    <p className="fs-3">in a row! 🔥</p>
+    <div className="fs-1 mt-2">🔥🔥🔥</div>
+  </Modal.Body>
+  <Modal.Footer className="justify-content-center border-0">
+    <Button variant="success" size="lg" onClick={async () => {
+      setShowStreakCelebrationModal(false);
+      setShowHighestStarModal(true);
+      await startGame();
+    }}>
+      Play Next Level ➡️
+    </Button>
+  </Modal.Footer>
+</Modal>
+
+
+
+
 
             </div>
 
