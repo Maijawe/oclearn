@@ -1,23 +1,23 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const multer = require('multer');
-const pdfParse = require('pdf-parse');
-const authenticateToken = require('./authMiddleware');
-const fs = require('fs');
-const dotenv = require('dotenv');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const axios = require('axios');
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const multer = require("multer");
+const pdfParse = require("pdf-parse");
+const authenticateToken = require("./authMiddleware");
+const fs = require("fs");
+const dotenv = require("dotenv");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const axios = require("axios");
 const path = require("path");
-const sendReminderEmail = require('./emailReminder');
+const sendReminderEmail = require("./emailReminder");
 
 const app = express();
 const port = process.env.PORT || 5000;
 
 dotenv.config();
-app.use(cors());// for listening to react requests on port 3000
+app.use(cors()); // for listening to react requests on port 3000
 app.use(express.json()); // for parsing JSON requests
 app.use(bodyParser.json());
 const Analytics = require("./analyticsModel");
@@ -25,20 +25,14 @@ const Analytics = require("./analyticsModel");
 // Serve static files from the React frontend
 app.use(express.static(path.join(__dirname, "../frontend/build")));
 
-
-
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: "uploads/" });
 //mongoose.connect('mongodb://127.0.0.1/aiLMSDatabase', { useNewUrlParser: true});
- mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-});  
+});
 
-
-
-
-
-const { Learner, LevelWords,DailyAnalytics} = require('./databse');
+const { Learner, LevelWords, DailyAnalytics } = require("./databse");
 
 const updateStreak = async (userId) => {
   const user = await Learner.findById(userId);
@@ -47,8 +41,16 @@ const updateStreak = async (userId) => {
   const lastLogin = new Date(user.lastLoginDate);
   const today = new Date();
 
-  const lastDate = new Date(lastLogin.getFullYear(), lastLogin.getMonth(), lastLogin.getDate());
-  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const lastDate = new Date(
+    lastLogin.getFullYear(),
+    lastLogin.getMonth(),
+    lastLogin.getDate()
+  );
+  const todayDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
 
   const diffInDays = (todayDate - lastDate) / (1000 * 3600 * 24);
   console.log(`Difference in days: ${diffInDays}`);
@@ -74,7 +76,6 @@ const updateStreak = async (userId) => {
   return { streakReset, user };
 };
 
-
 app.get("/api/send-reminders", async (req, res) => {
   console.log("reminder route is triggered");
 
@@ -88,7 +89,9 @@ app.get("/api/send-reminders", async (req, res) => {
       if (lastLogin !== today && learner.parentEmail) {
         await sendReminderEmail(learner.parentEmail, learner.name);
       }
-      console.log(`📧 ${learner.name} missed today. Email sent to: ${learner.parentEmail}`);
+      console.log(
+        `📧 ${learner.name} missed today. Email sent to: ${learner.parentEmail}`
+      );
     }
 
     res.status(200).json({ message: "Reminders sent successfully!" });
@@ -98,15 +101,16 @@ app.get("/api/send-reminders", async (req, res) => {
   }
 });
 
-
-
-
 app.post("/api/updatecipher", authenticateToken, async (req, res) => {
   try {
     const { cipherKeys, cipherStreak } = req.body;
 
-    
-    console.log("Updating cipherKeys:", cipherKeys, "cipherStreak:", cipherStreak);
+    console.log(
+      "Updating cipherKeys:",
+      cipherKeys,
+      "cipherStreak:",
+      cipherStreak
+    );
 
     const updated = await Learner.findByIdAndUpdate(
       req.userId,
@@ -127,15 +131,20 @@ app.post("/api/updatecipher", authenticateToken, async (req, res) => {
   }
 });
 
-
-
-
 app.get("/api/startgame", authenticateToken, async (req, res) => {
   try {
     const learner = await Learner.findById(req.userId);
     if (!learner) return res.status(404).json({ error: "Learner not found" });
 
-    const { level, streak, stars, cipherKeys, cipherStreak, currentDailyStars, highestStars } = learner;
+    const {
+      level,
+      streak,
+      stars,
+      cipherKeys,
+      cipherStreak,
+      currentDailyStars,
+      highestStars,
+    } = learner;
 
     // Fetch level words
     const levelDoc = await LevelWords.findOne({ level });
@@ -147,7 +156,7 @@ app.get("/api/startgame", authenticateToken, async (req, res) => {
       return res.status(200).json({
         levelAvailable: false,
         level,
-        message: `Level ${level} is under construction`
+        message: `Level ${level} is under construction`,
       });
     }
 
@@ -159,14 +168,13 @@ app.get("/api/startgame", authenticateToken, async (req, res) => {
       stars,
       cipherKeys,
       level,
-      highestStars
+      highestStars,
     });
   } catch (error) {
     console.error("Error in /api/startgame:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 // send data to db
 app.post("/api/senddata", authenticateToken, async (req, res) => {
@@ -177,9 +185,9 @@ app.post("/api/senddata", authenticateToken, async (req, res) => {
     const alreadyLogged = await Analytics.findOne({
       userId: req.userId,
       eventType: "level_complete",
-      level: 3
+      level: 3,
     });
-    
+
     if (!alreadyLogged && req.body.level === 4) {
       await Analytics.create({
         userId: req.userId,
@@ -194,29 +202,32 @@ app.post("/api/senddata", authenticateToken, async (req, res) => {
         $set: {
           stars: req.body.stars,
           level: req.body.level,
-          cipherKeys: req.body.cipherKeys
+          cipherKeys: req.body.cipherKeys,
         },
         $push: {
-          wordsIKnow: { $each: req.body.wordsIknow }
-        }
+          wordsIKnow: { $each: req.body.wordsIknow },
+        },
       },
       { new: true, useFindAndModify: false }
     );
 
     const learner = await Learner.findById(req.userId);
 
-if (learner) {
-  const currentStars = req.body.currentDailyStars;
-  const previousHigh = learner.highestStars || 0;
+    if (learner) {
+      const currentStars = req.body.currentDailyStars;
+      const previousHigh = learner.highestStars || 0;
 
-  if (currentStars > previousHigh) {
-    learner.highestStars = currentStars;
-    await learner.save();
-    console.log("🔥 New high score saved:", currentStars);
-  } else {
-    console.log("⭐ Current stars did not beat highestStars:", previousHigh);
-  }
-}
+      if (currentStars > previousHigh) {
+        learner.highestStars = currentStars;
+        await learner.save();
+        console.log("🔥 New high score saved:", currentStars);
+      } else {
+        console.log(
+          "⭐ Current stars did not beat highestStars:",
+          previousHigh
+        );
+      }
+    }
 
     res.json({ message: "Data received successfully", data });
   } catch (err) {
@@ -224,12 +235,6 @@ if (learner) {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-
-
-
-
-
 
 // Get the streak of the user
 app.get("/api/updatestreak", authenticateToken, async (req, res) => {
@@ -241,7 +246,9 @@ app.get("/api/updatestreak", authenticateToken, async (req, res) => {
 
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    console.log(`Streak is: ${user.streak}, CipherStreak: ${user.cipherStreak}, Streak Reset: ${streakReset}`);
+    console.log(
+      `Streak is: ${user.streak}, CipherStreak: ${user.cipherStreak}, Streak Reset: ${streakReset}`
+    );
 
     res.status(200).json({
       streak: user.streak,
@@ -254,9 +261,7 @@ app.get("/api/updatestreak", authenticateToken, async (req, res) => {
   }
 });
 
-
-
-app.get('/api/analytics/level3-completions', async (req, res) => {
+app.get("/api/analytics/level3-completions", async (req, res) => {
   try {
     const users = await Analytics.find({
       eventType: "level_complete",
@@ -273,9 +278,7 @@ app.get('/api/analytics/level3-completions', async (req, res) => {
   }
 });
 
-
-
-app.get('/api/analytics/daily-logins', async (req, res) => {
+app.get("/api/analytics/daily-logins", async (req, res) => {
   try {
     const start = new Date();
     start.setHours(0, 0, 0, 0); // today at 00:00
@@ -313,13 +316,16 @@ app.get("/api/analytics/daily-snapshot", async (req, res) => {
 
     // ✅ Get today's active users using date range
     const dailyUsers = await Learner.find({
-      lastLoginDate: { $gte: start, $lte: end }
+      lastLoginDate: { $gte: start, $lte: end },
     });
 
     const dailyActiveUsers = dailyUsers.length;
 
     // ✅ Streak cohorts
-    let under3 = 0, between3And20 = 0, between21And40 = 0, over40 = 0;
+    let under3 = 0,
+      between3And20 = 0,
+      between21And40 = 0,
+      over40 = 0;
 
     const allLearners = await Learner.find();
 
@@ -354,7 +360,7 @@ app.get("/api/analytics/daily-snapshot", async (req, res) => {
         date: todayString,
         dailyActiveUsers,
         streakCohorts: { under3, between3And20, between21And40, over40 },
-        averageSessionDuration
+        averageSessionDuration,
       },
       { upsert: true }
     );
@@ -365,8 +371,8 @@ app.get("/api/analytics/daily-snapshot", async (req, res) => {
         date: todayString,
         dailyActiveUsers,
         streakCohorts: { under3, between3And20, between21And40, over40 },
-        averageSessionDuration
-      }
+        averageSessionDuration,
+      },
     });
   } catch (error) {
     console.error("Error generating daily analytics:", error);
@@ -382,7 +388,6 @@ app.get("/api/analytics/all", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 app.post("/api/session/end", authenticateToken, async (req, res) => {
   try {
@@ -401,8 +406,6 @@ app.post("/api/session/end", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
-
 
 app.post("/api/levels", async (req, res) => {
   const { level, words } = req.body;
@@ -437,14 +440,13 @@ app.post("/api/levels", async (req, res) => {
   }
 });
 
-
-
-
 app.post("/api/login", async (req, res) => {
   const { username, pin } = req.body;
 
   if (!username || !pin) {
-    return res.status(400).json({ message: "Please enter both username and pin." });
+    return res
+      .status(400)
+      .json({ message: "Please enter both username and pin." });
   }
 
   try {
@@ -474,27 +476,29 @@ app.post("/api/login", async (req, res) => {
 
     console.log("Login successful for:", username);
     return res.status(200).json({ token, message: "Login successful" });
-
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ message: "An error occurred during login" });
   }
 });
 
-
 app.post("/api/register", async (req, res) => {
-  const { name, username, pin, parentContact , parentEmail } = req.body;
+  const { name, username, pin, parentContact, parentEmail } = req.body;
 
   // Basic validation
   if (!name || !username || !pin || !parentContact || !parentEmail) {
-    return res.status(400).json({ message: "Please fill in all required fields." });
+    return res
+      .status(400)
+      .json({ message: "Please fill in all required fields." });
   }
 
   try {
     // Check if username already exists
     const existingUser = await Learner.findOne({ username });
     if (existingUser) {
-      return res.status(400).json({ message: "Username already taken. Please choose another." });
+      return res
+        .status(400)
+        .json({ message: "Username already taken. Please choose another." });
     }
 
     // Hash the PIN before storing
@@ -503,10 +507,10 @@ app.post("/api/register", async (req, res) => {
 
     const learner = new Learner({
       name: name,
-      username:username,
+      username: username,
       pin: hashedPin,
       contacts: parentContact,
-      parentEmail : parentEmail
+      parentEmail: parentEmail,
     });
 
     await learner.save();
@@ -515,13 +519,13 @@ app.post("/api/register", async (req, res) => {
     const token = jwt.sign({ userId: learner._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    
-    res.status(201).json({ message: "Successfully registered!", token });
-    
 
+    res.status(201).json({ message: "Successfully registered!", token });
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({ message: "Something went wrong. Please try again later." });
+    res
+      .status(500)
+      .json({ message: "Something went wrong. Please try again later." });
   }
 });
 

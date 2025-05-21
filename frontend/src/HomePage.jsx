@@ -1,6 +1,17 @@
-import React, { useState,useEffect, useRef } from "react";
-import { Container,Modal, Button, Form, Card, Alert,ProgressBar, Image,Navbar, Nav  } from "react-bootstrap";
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Container,
+  Modal,
+  Button,
+  Form,
+  Card,
+  Alert,
+  ProgressBar,
+  Image,
+  Navbar,
+  Nav,
+} from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./home2.css"; // Import custom styles
 import incorrectSound from "./sounds/wrong.mp3";
@@ -12,24 +23,21 @@ import trophyImage from "./images/trophy.png";
 import starImage from "./images/goldenStar.jpg";
 import correctSound from "./sounds/success.mp3";
 import winner from "./sounds/winner.wav";
-import cipherSound from './sounds/cipherKeySound.wav';
-import lostStreakSound from './sounds/lostStreak.wav';
-
+import cipherSound from "./sounds/cipherKeySound.wav";
+import lostStreakSound from "./sounds/lostStreak.wav";
 
 function SpellingGame() {
-
   const navigate = useNavigate();
 
-
   const [isDataFetched, setIsDataFetched] = useState(false);
-  const [isStreakFetched , setIsStreakFetched] = useState(false)
+  const [isStreakFetched, setIsStreakFetched] = useState(false);
   const [wordsIKindaKnow, setWordsIKindaKnow] = useState([]);
   const [wordsIDontKnow, setWordsIDontKnow] = useState([]);
   const [levelWords, setLevelWords] = useState([]);
-  const [cipherKeys ,setCipherKeys] = useState(0);
-  const [level , setLevel] = useState(0);
-  const [currentDailyStars , setCurrentDailyStars ] = useState(0);
-  const [highestStars , setHighestStars] = useState(0);
+  const [cipherKeys, setCipherKeys] = useState(0);
+  const [level, setLevel] = useState(0);
+  const [currentDailyStars, setCurrentDailyStars] = useState(0);
+  const [highestStars, setHighestStars] = useState(0);
   const [revealedWord, setRevealedWord] = useState("");
   const [wordsIKnow, setWordsIKnow] = useState([]);
   const [currentWord, setCurrentWord] = useState("");
@@ -45,8 +53,8 @@ function SpellingGame() {
   const [hint, setHint] = useState(""); // Store hint
   const [showModal, setShowModal] = useState(false);
   const [imageURL, setImageURL] = useState("");
-  const [maxHintsBool ,setMaxHintsBool] = useState(false);
-  const [cipherKeyNumber , setCipherKeyNumber] = useState(0);
+  const [maxHintsBool, setMaxHintsBool] = useState(false);
+  const [cipherKeyNumber, setCipherKeyNumber] = useState(0);
   const [streak, setStreak] = useState(0);
   const [cipherStreak, setCipherStreak] = useState(0);
   const [showCipherModal, setShowCipherModal] = useState(false);
@@ -54,107 +62,103 @@ function SpellingGame() {
   const [guess, setGuess] = useState("");
   const [cipherMessage, setCipherMessage] = useState("");
   const [CipherKeyImage, showCipherKeyImage] = useState(false);
-  const [stars , setStars] = useState(0);
-  const [showStarModal , setShowStarModal] = useState(false);
+  const [stars, setStars] = useState(0);
+  const [showStarModal, setShowStarModal] = useState(false);
   const [revealedWords, setRevealedWords] = useState([]);
   const [showInstructions, setShowInstructions] = useState(false);
   const [levelComingSoon, setLevelComingSoon] = useState(false);
   const [unavailableLevel, setUnavailableLevel] = useState(null);
- 
+  const [randomNumber, setRandomNumber] = useState(0);
 
-    // Modal controls
-    const [showStreakCelebrationModal, setShowStreakCelebrationModal] = useState(false);
-    const [showStarsTotalModal, setShowStarsTotalModal] = useState(false);
-    const [showHighestStarsModal, setShowHighestStarModal] = useState(false);
-    const [showStreakLostModal, setShowStreakLostModal] = useState(false);
-    const [showRestartStreakModal, setShowRestartStreakModal] = useState(false);
-    
-    const [isLoading, setIsLoading] = useState(false);
+  // Modal controls
+  const [showStreakCelebrationModal, setShowStreakCelebrationModal] =
+    useState(false);
+  const [showStarsTotalModal, setShowStarsTotalModal] = useState(false);
+  const [showHighestStarsModal, setShowHighestStarModal] = useState(false);
+  const [showStreakLostModal, setShowStreakLostModal] = useState(false);
+  const [showRestartStreakModal, setShowRestartStreakModal] = useState(false);
+  const [showCipherCountdownModal, setShowCipherCountdownModal] =
+    useState(false);
 
-    
+  const [isLoading, setIsLoading] = useState(false);
 
-//modal voice-over
-const modalVoiceOver = (text) => {
- window.speechSynthesis.cancel(); // 🔇 Stop previous voice
+  //modal voice-over
+  const modalVoiceOver = (text) => {
+    window.speechSynthesis.cancel(); // 🔇 Stop previous voice
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'en-US';
-  utterance.pitch = 1.2;
-  utterance.rate = 0.85; // Slower for young learners
-  window.speechSynthesis.speak(utterance);
-};
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US";
+    utterance.pitch = 1.2;
+    utterance.rate = 0.85; // Slower for young learners
+    window.speechSynthesis.speak(utterance);
+  };
 
-useEffect(() => {
-  if (showStreakCelebrationModal) {
-    modalVoiceOver(`Wow! You've played ${streak} days in a row!`);
-  }
-}, [showStreakCelebrationModal]);
+  useEffect(() => {
+    if (showStreakCelebrationModal) {
+      modalVoiceOver(`Wow! You've played ${streak} days in a row!`);
+    }
+  }, [showStreakCelebrationModal]);
 
-useEffect(() => {
-  if (showHighestStarsModal) {
-    modalVoiceOver(`Your best score is ${highestStars} stars. Today, you got ${currentDailyStars} stars.`);
-  }
-}, [showHighestStarsModal]);
+  useEffect(() => {
+    if (showCipherCountdownModal) {
+      modalVoiceOver(
+        "You're one day away from unlocking the magic number game!"
+      );
+    }
+  }, [showCipherCountdownModal]);
 
-useEffect(() => {
-  if (showStarsTotalModal) {
-    modalVoiceOver(`You have ${stars} stars! Keep going!`);
-  }
-}, [showStarsTotalModal]);
+  useEffect(() => {
+    if (showHighestStarsModal) {
+      modalVoiceOver(
+        `Your best score is ${highestStars} stars. Today, you got ${currentDailyStars} stars.`
+      );
+    }
+  }, [showHighestStarsModal]);
 
-useEffect(() => {
-  if (showStreakLostModal) {
-    modalVoiceOver("Oh no! You missed a day. Your fire is gone.");
-  }
-}, [showStreakLostModal]);
+  useEffect(() => {
+    if (showStarsTotalModal) {
+      modalVoiceOver(`You have ${stars} stars! Keep going!`);
+    }
+  }, [showStarsTotalModal]);
 
+  useEffect(() => {
+    if (showStreakLostModal) {
+      modalVoiceOver("Oh no! You missed a day. Your fire is gone.");
+    }
+  }, [showStreakLostModal]);
 
-
-
-   // Total words count
-   const totalWords =
-   wordsIKindaKnow.length + wordsIDontKnow.length + levelWords.length + wordsIKnow.length;
-   const completedWords = wordsIKnow.length;
-   const progress = (completedWords / totalWords) * 100;
-
-
-  
-  
-
-
-
-  
-
-  
-
+  // Total words count
+  const totalWords =
+    wordsIKindaKnow.length +
+    wordsIDontKnow.length +
+    levelWords.length +
+    wordsIKnow.length;
+  const completedWords = wordsIKnow.length;
+  const progress = (completedWords / totalWords) * 100;
 
   //fetch details from backend
   const fetchGameData = async () => {
     try {
       //
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/startgame`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-        },
-      });
-  
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/startgame`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+          },
+        }
+      );
+
       if (!response.ok) throw new Error("Failed to fetch game data");
-  
+
       const data = await response.json();
-      console.log("Fetched data:", data);
       return data; // ✅ return the data instead of setting state here
     } catch (error) {
       console.error("fetchGameData error:", error);
       return null;
     }
   };
-  
-
-    
-  
-
-
 
   //star view animation
   useEffect(() => {
@@ -162,51 +166,53 @@ useEffect(() => {
       const timer = setTimeout(() => {
         setShowStarModal(false);
       }, 3000); // Hide modal after 2 seconds
-  
+
       return () => clearTimeout(timer); // Cleanup function
     }
   }, [showStarModal]);
 
-   //cipherKey function
-   const getCipherKey = () => {   
-      setShowCipherModal(true); // Show modal instead of prompt
+  //cipherKey function
+  const getCipherKey = () => {
+    setShowCipherModal(true); // Show modal instead of prompt
   };
-  
+
   //random function for cipherKey
   const handleGuess = () => {
-    const updatedCipherStreak = cipherStreak - 3;
+    const updatedCipherStreak = cipherStreak - 2;
     let updatedCipherKeys = cipherKeys;
     //setCipherStreaks(newCipherStreak);
     const randomKey = Math.floor(Math.random() * 5) + 1;
+    setRandomNumber(randomKey);
     if (parseInt(guess) === randomKey) {
       setCipherMessage("🎉 Correct! You've won a cipher key!");
       updatedCipherKeys += 1;
       //newCipherKeys = cipherKeys + 1;
       setCipherKeys(updatedCipherKeys);
       const soundCipher = new Audio(cipherSound);
-      soundCipher.play(); 
+      soundCipher.play();
       showCipherKeyImage(true);
       setCipherKeyNumber(randomKey);
     } else {
-      
-      setCipherMessage(`❌ Wrong guess!, I was thinking ${randomKey} Try again after a 5-day streak.`);
+      setCipherMessage(
+        `❌ Wrong guess!, I was thinking ${randomKey} Try again after a 5-day streak.`
+      );
     }
-  
+
     setCipherStreak(updatedCipherStreak);
-    setShowCipherAlert(true); 
-    console.log(`new cipherKeys ${updatedCipherKeys} and new cipher streak ${updatedCipherStreak}`)
-     // ⬇️ Send update to backend
+    setShowCipherAlert(true);
+    console.log(
+      `new cipherKeys ${updatedCipherKeys} and new cipher streak ${updatedCipherStreak}`
+    );
+    // ⬇️ Send update to backend
     // now send these correct values to backend
     updateCipherData(updatedCipherKeys, updatedCipherStreak);
-  
+
     // Keep the modal open for 2 seconds, then close
     setTimeout(() => {
       setShowCipherModal(false);
       setShowCipherAlert(false);
     }, 4000);
   };
-  
-
 
   const updateCipherData = async (newCipherKeys, newCipherStreak) => {
     const token = sessionStorage.getItem("token");
@@ -214,32 +220,33 @@ useEffect(() => {
       console.error("No token found in sessionStorage");
       return;
     }
-  
+
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/updatecipher`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          cipherKeys: newCipherKeys,
-          cipherStreak: newCipherStreak,
-        }),
-      });
-  
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/updatecipher`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            cipherKeys: newCipherKeys,
+            cipherStreak: newCipherStreak,
+          }),
+        }
+      );
+
       if (!response.ok) {
         throw new Error("Failed to update cipher data");
       }
-  
+
       const result = await response.json();
       console.log("Cipher data updated:", result);
     } catch (error) {
       console.error("Error updating cipher data:", error);
     }
   };
-
-
 
   const inputRef = useRef(null);
 
@@ -248,99 +255,85 @@ useEffect(() => {
     try {
       const token = sessionStorage.getItem("token");
       if (!token) throw new Error("User not authenticated");
-  
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/updatestreak`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-  
+
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/updatestreak`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
       if (!response.ok) throw new Error("Failed to fetch streak");
-  
+
       const data = await response.json();
       setStreak(data.streak);
       setCipherStreak(data.cipherStreak); //🔥 you must also fix server to return cipherStreak
-      return data;  // ⬅️ Return it
+      return data; // ⬅️ Return it
     } catch (error) {
       console.error("Error fetching streak:", error);
     }
   };
-  
 
-    useEffect(() => {
-      if (gameWon) {
-        
-        const newLevel = level + 1;
-        setLevel(newLevel);
-        setIsDataFetched(false); 
+  useEffect(() => {
+    if (gameWon) {
+      const newLevel = level + 1;
+      setLevel(newLevel);
+      setIsDataFetched(false);
 
-      
-        setShowHighestStarModal(true);
-  
+      setShowHighestStarModal(true);
 
-   
-    
+      //send data to backend
+      const sendData = async () => {
+        const token = sessionStorage.getItem("token");
 
+        if (!token) {
+          console.error("No token found in sessionStorage");
+          return;
+        }
+        const details = {
+          level: newLevel,
+          stars: stars,
+          wordsIknow: wordsIKnow,
+          currentDailyStars: currentDailyStars,
+        };
+        console.log("data level Words: " + details.wordsIknow);
 
-        
-    
-        
-    
-        //send data to backend
-        const sendData = async () => {
-          const token = sessionStorage.getItem("token");
-
-          if (!token) {
-            console.error("No token found in sessionStorage");
-            return;
-          }
-          const details ={
-            level: newLevel,
-            stars: stars,
-            wordsIknow :wordsIKnow,
-            currentDailyStars : currentDailyStars
-            
-          }
-          console.log("data level Words: "+details.wordsIknow);
-        
-          try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/senddata`, {
+        try {
+          const response = await fetch(
+            `${process.env.REACT_APP_API_URL}/api/senddata`,
+            {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                 "Authorization": `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify(details),
-            });
-        
-            if (!response.ok) {
-              throw new Error("Failed to send data");
             }
-        
-            const result = await response.json();
-            console.log("Response from server:", result);
-          } catch (error) {
-            console.error("Error:", error);
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to send data");
           }
-        };
-        
-        // Call the function when needed
-        sendData();
-        
 
-        // Reset game state for the next level
-        setGameWon(false); // Reset gameWon to false after handling
-        setMessage("🎉 You won the game! Moving to the next level...");
-    
-        // Fetch new game data for the next level
-        fetchGameData();
-      }
-    }, [gameWon]);
-  
-    
-  
-  
-  
+          const result = await response.json();
+          console.log("Response from server:", result);
+        } catch (error) {
+          console.error("Error:", error);
+        }
+      };
 
+      // Call the function when needed
+      sendData();
+
+      // Reset game state for the next level
+      setGameWon(false); // Reset gameWon to false after handling
+      setMessage("🎉 You won the game! Moving to the next level...");
+
+      // Fetch new game data for the next level
+      fetchGameData();
+    }
+  }, [gameWon]);
 
   // Fetch image when `currentWord` changes
   useEffect(() => {
@@ -348,7 +341,6 @@ useEffect(() => {
       setImageURL(""); // Clear image if word is empty
       return;
     }
-
 
     const fetchImage = async () => {
       try {
@@ -361,7 +353,9 @@ useEffect(() => {
         );
 
         if (!response.ok) {
-          throw new Error(`HTTP Error ${response.status} - ${response.statusText}`);
+          throw new Error(
+            `HTTP Error ${response.status} - ${response.statusText}`
+          );
         }
 
         const data = await response.json();
@@ -378,171 +372,160 @@ useEffect(() => {
 
     fetchImage();
   }, [currentWord]); // Runs when `currentWord` changes
-  
-  
 
-    
-    
-    // Check for game win condition
-    useEffect(() => {
-      console.log(`is data fetched ${isDataFetched} levelWords length ${levelWords.length}`)
-      if (isDataFetched && levelWords.length === 0) {
-        setGameWon(true);
-        setMessage("🎉 You won the game!");
+  // Check for game win condition
+  useEffect(() => {
+    console.log(
+      `is data fetched ${isDataFetched} levelWords length ${levelWords.length}`
+    );
+    if (isDataFetched && levelWords.length === 0) {
+      setGameWon(true);
+      setMessage("🎉 You won the game!");
 
-        const sessionStart = sessionStorage.getItem("sessionStartTime");
-        if (sessionStart) {
-        const duration = Math.floor((Date.now() - parseInt(sessionStart)) / 1000);
+      const sessionStart = sessionStorage.getItem("sessionStartTime");
+      if (sessionStart) {
+        const duration = Math.floor(
+          (Date.now() - parseInt(sessionStart)) / 1000
+        );
         console.log("Session Duration:", duration, "seconds");
 
         // Send to backend
         const token = sessionStorage.getItem("token");
         fetch(`${process.env.REACT_APP_API_URL}/api/session/end`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ duration }),
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ duration }),
         });
 
         // Optional cleanup
         sessionStorage.removeItem("sessionStartTime");
-}
-
-
       }
-    }, [levelWords]);
-
-  
-const startGame = async () => {
-  // Start timer when game begins
-  sessionStorage.setItem("sessionStartTime", Date.now());
-  console.log("🚀 Starting game...");
-  setIsLoading(true);
-
-  const data = await fetchGameData(); // Always fetch fresh game data
-
-  if (!data) {
-    setIsLoading(false);
-    return;
-  }
-  // ✅ Check if the level is coming soon
-if (data.levelAvailable === false) {
-  setUnavailableLevel(data.level);
-  setLevelComingSoon(true);
-  setIsLoading(false);
-  return;
-}
-
-  // ✅ Always update state, even if data was fetched before
-  setLevelWords(data.levelWords);
-  setCipherKeys(data.cipherKeys);
-  setStars(data.stars);
-  setStreak(data.streak);
-  setLevel(data.level);
-  setHighestStars(data.highestStars);
-  setCipherStreak(data.cipherStreak);
-  setIsDataFetched(true); // still keep for future use
-  console.log("LEVEL WORDS for level", data.level, ":", data.levelWords);
-
-  if (data.levelWords.length > 0) {
-    setCurrentWord(data.levelWords[0]);
-    speakWord(data.levelWords[0]);
-  } else {
-    setGameWon(true);
-  }
-
-  // Check streak for cipher lottery
-  const freshData = await fetchStreak();
-  if (freshData?.streakReset) {
-    const sadSound = new Audio(lostStreakSound);
-    sadSound.play();
-    setShowStreakLostModal(true);
-}
-  else if (freshData && freshData.cipherStreak >= 3) {
-    getCipherKey();
-    setIsLoading(false);
-    return;
-  }
-
-  // Final fallback check
-  if (!currentWord && data.levelWords.length > 0) {
-    setCurrentWord(data.levelWords[0]);
-    speakWord(data.levelWords[0]);
-  }
-
-  // Reset state for new level
-  setWordsIKnow([]);
-  setIncorrectAttempts(0);
-  setGameLost(false);
-  setGameWon(false);
-  setShowAlert(false);
-  setHintClicks(0);
-
-  setTimeout(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
     }
-  }, 100);
+  }, [levelWords]);
 
-  setIsLoading(false);
-};
+  const startGame = async () => {
+    // Start timer when game begins
+    sessionStorage.setItem("sessionStartTime", Date.now());
+    console.log("🚀 Starting game...");
+    setIsLoading(true);
 
-    
-    
-    
+    const data = await fetchGameData(); // Always fetch fresh game data
 
-    const speakWord = (word) => {
-      if (!word) return;
-      console.log("Speaking word:", word);
-    
-      const synth = window.speechSynthesis;
-    
-      const speak = () => {
-        const voices = synth.getVoices();
-        console.log("Available voices:", voices.map(v => v.name));
-    
-        const preferredVoice =
-          voices.find((v) => v.name.includes("Google US English")) ||
-          voices.find((v) => v.lang === "en-US") ||
-          voices[0];
-    
-        if (!preferredVoice) {
-          //alert("No speech voices available. Try refreshing your browser.");
-          return;
-        }
-    
-        const utterance = new SpeechSynthesisUtterance(word);
-        utterance.voice = preferredVoice;
-        utterance.lang = "en-US";
-        utterance.rate = 0.9;
-    
-        synth.cancel(); // cancel any previous speech
-        synth.speak(utterance);
-        setIsSpeakingDisabled(true);
-        setTimeout(() => setIsSpeakingDisabled(false), 2000);
-      };
-    
-      // Make sure voices are ready
-      if (synth.getVoices().length === 0) {
-        // Some browsers need delay to populate voices
-        synth.onvoiceschanged = () => speak();
-        setTimeout(() => speak(), 200); // fallback trigger
-      } else {
-        speak();
+    if (!data) {
+      setIsLoading(false);
+      return;
+    }
+    // ✅ Check if the level is coming soon
+    if (data.levelAvailable === false) {
+      setUnavailableLevel(data.level);
+      setLevelComingSoon(true);
+      setIsLoading(false);
+      return;
+    }
+
+    // ✅ Always update state, even if data was fetched before
+    setLevelWords(data.levelWords);
+    setCipherKeys(data.cipherKeys);
+    setStars(data.stars);
+    setStreak(data.streak);
+    setLevel(data.level);
+    setHighestStars(data.highestStars);
+    setCipherStreak(data.cipherStreak);
+    setIsDataFetched(true); // still keep for future use
+    console.log("LEVEL WORDS for level", data.level, ":", data.levelWords);
+
+    if (data.levelWords.length > 0) {
+      setCurrentWord(data.levelWords[0]);
+      speakWord(data.levelWords[0]);
+    } else {
+      setGameWon(true);
+    }
+
+    // Check streak for cipher lottery
+    const freshData = await fetchStreak();
+    if (freshData?.streakReset) {
+      const sadSound = new Audio(lostStreakSound);
+      sadSound.play();
+      setShowStreakLostModal(true);
+    } else if (freshData && freshData.cipherStreak >= 2) {
+      getCipherKey();
+      setIsLoading(false);
+      return;
+    }
+
+    // Final fallback check
+    if (!currentWord && data.levelWords.length > 0) {
+      setCurrentWord(data.levelWords[0]);
+      speakWord(data.levelWords[0]);
+    }
+
+    // Reset state for new level
+    setWordsIKnow([]);
+    setIncorrectAttempts(0);
+    setGameLost(false);
+    setGameWon(false);
+    setShowAlert(false);
+    setHintClicks(0);
+
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
       }
+    }, 100);
+
+    setIsLoading(false);
+  };
+
+  const speakWord = (word) => {
+    if (!word) return;
+    console.log("Speaking word:", word);
+
+    const synth = window.speechSynthesis;
+
+    const speak = () => {
+      const voices = synth.getVoices();
+      console.log(
+        "Available voices:",
+        voices.map((v) => v.name)
+      );
+
+      const preferredVoice =
+        voices.find((v) => v.name.includes("Google US English")) ||
+        voices.find((v) => v.lang === "en-US") ||
+        voices[0];
+
+      if (!preferredVoice) {
+        //alert("No speech voices available. Try refreshing your browser.");
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.voice = preferredVoice;
+      utterance.lang = "en-US";
+      utterance.rate = 0.9;
+
+      synth.cancel(); // cancel any previous speech
+      synth.speak(utterance);
+      setIsSpeakingDisabled(true);
+      setTimeout(() => setIsSpeakingDisabled(false), 2000);
     };
-    
-    
-    
-    
-    
-    
+
+    // Make sure voices are ready
+    if (synth.getVoices().length === 0) {
+      // Some browsers need delay to populate voices
+      synth.onvoiceschanged = () => speak();
+      setTimeout(() => speak(), 200); // fallback trigger
+    } else {
+      speak();
+    }
+  };
 
   const checkSpelling = () => {
     if (!currentWord) return; // Prevent checking if no word is set
-  
+
     // Check if the user input matches the current word
     if (userInput.trim().toLowerCase() === currentWord.trim().toLowerCase()) {
       const sound = new Audio(correctSound);
@@ -553,36 +536,34 @@ if (data.levelAvailable === false) {
 
       //increase stars by 1 and show star model
       const isRevealed = revealedWords.includes(currentWord);
-      if(incorrectAttempts ===0 && !isRevealed){
-        setStars(prevVal => prevVal+1);
-        setCurrentDailyStars(prevVal => prevVal+1);
+      if (incorrectAttempts === 0 && !isRevealed) {
+        setStars((prevVal) => prevVal + 1);
+        setCurrentDailyStars((prevVal) => prevVal + 1);
         console.log(`current daily stars :${currentDailyStars}`);
         setShowStarModal(true);
         setTimeout(() => setShowStarModal(false), 2000);
       }
-      
 
-  
       // Move the current word to wordsIKnow
-      setWordsIKnow(prev => [...prev, currentWord]);
-  
+      setWordsIKnow((prev) => [...prev, currentWord]);
+
       // Update levelWords by removing the current word
-      let updatedLevelWords = levelWords.filter(word => word !== currentWord);
-  
+      let updatedLevelWords = levelWords.filter((word) => word !== currentWord);
+
       // Set the updated levelWords
       setLevelWords(updatedLevelWords);
-  
+
       // Check if there are more words in levelWords to continue the game
       let nextWord = updatedLevelWords[0] || null;
       if (nextWord) {
         setCurrentWord(nextWord);
         speakWord(nextWord);
       } else {
-        setGameWon(true);  // End game when no words are left
+        setGameWon(true); // End game when no words are left
         const sound = new Audio(winner);
         sound.play();
       }
-  
+
       // Reset the input and hint
       setUserInput("");
       setHintClicks(0);
@@ -591,9 +572,9 @@ if (data.levelAvailable === false) {
     } else {
       const sound = new Audio(incorrectSound);
       sound.play();
-      setIncorrectAttempts(prev => {
+      setIncorrectAttempts((prev) => {
         const newAttempts = prev + 1;
-  
+
         // Allow two attempts, after which reveal the word
         if (newAttempts === 2) {
           setMessage("❌ Incorrect! The correct word is revealed.");
@@ -602,36 +583,33 @@ if (data.levelAvailable === false) {
         } else {
           setMessage("❌ Incorrect! Try again.");
         }
-  
+
         return newAttempts;
       });
       setShowAlert(true);
       setTimeout(() => setShowAlert(false), 2000);
     }
   };
-  
-  
-  
-  
-  
-
 
   const getHint = () => {
-    let hint = currentWord.split("").map(() => "_").join("");
+    let hint = currentWord
+      .split("")
+      .map(() => "_")
+      .join("");
     let totalHints = 4; // Default hints
-  
+
     if (currentWord.length <= 5) {
       totalHints = 2;
     } else if (currentWord.length > 8) {
       totalHints = 5;
     }
-  
+
     if (hintClicks >= totalHints) {
       setMaxHintsBool(true);
       return hint; // Stop revealing if max hints reached
     }
     const revealIndices = [0, currentWord.length - 1]; // Always reveal first and last
-  
+
     if (hintClicks >= 1 && totalHints > 2) {
       revealIndices.push(1); // Second letter
     }
@@ -641,40 +619,39 @@ if (data.levelAvailable === false) {
     if (hintClicks >= 3 && totalHints > 4) {
       revealIndices.push(2); // Third letter for words with 5+ hints
     }
-  
+
     hint = hint
       .split("")
       .map((char, index) =>
         revealIndices.includes(index) ? currentWord[index] : "_"
       )
       .join("");
-  
+
     return hint;
   };
-  
+
   const handleHintClick = () => {
     let maxHints = 4; // Default max hints
-  
+
     if (currentWord.length <= 5) {
       maxHints = 2;
     } else if (currentWord.length > 8) {
       maxHints = 5;
     }
-  
+
     if (hintClicks < maxHints) {
       setHintClicks(hintClicks + 1);
       setHint(getHint());
     }
-       // Check if next click will exceed the max hints
-       if (hintClicks + 1 >= maxHints) {
-        setMaxHintsBool(true);
-      }
+    // Check if next click will exceed the max hints
+    if (hintClicks + 1 >= maxHints) {
+      setMaxHintsBool(true);
+    }
   };
-  
 
   const speakPhonetically = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US'; // Set language to English (adjust if needed)
+    utterance.lang = "en-US"; // Set language to English (adjust if needed)
     utterance.rate = 0.1; // Adjust speed (0.5 is slower, 1 is normal, 2 is fast)
     speechSynthesis.speak(utterance);
   };
@@ -685,26 +662,25 @@ if (data.levelAvailable === false) {
     speakPhonetically(currentWord);
     setMessage(`✅ The word is: ${currentWord}`);
     setShowModal(true);
-  
+
     // Move the revealed word to the end of the levelWords array
-    let updatedLevelWords = levelWords.filter(word => word !== currentWord); // Remove the word from its current position
+    let updatedLevelWords = levelWords.filter((word) => word !== currentWord); // Remove the word from its current position
     updatedLevelWords.push(currentWord); // Add it to the end of the array
-  
+
     // Update the state with the new levelWords array
     setLevelWords(updatedLevelWords);
-  
+
     // Move the word to the "Don't Know" list
     let updatedWordsIDontKnow = [...wordsIDontKnow, currentWord];
     setWordsIDontKnow(updatedWordsIDontKnow);
 
     //push word to revealedWords array
-    setRevealedWords(prev => [...prev, currentWord]);
+    setRevealedWords((prev) => [...prev, currentWord]);
 
-  
     // Find the next word to display
     setTimeout(() => {
       let nextWord = updatedLevelWords[0] || null; // Always pick the first word from the updated levelWords array
-  
+
       if (nextWord) {
         setCurrentWord(nextWord);
         setHint("");
@@ -712,28 +688,30 @@ if (data.levelAvailable === false) {
       } else {
         setGameWon(true); // If no words are left, the game is won
       }
-  
+
       // Reset input and hints
       setUserInput("");
       setHintClicks(0);
     }, 2000); // Give time for the user to see the revealed word
   };
-  
-  
-
-
 
   return (
     <Container className="text-center mt-5">
-
-      <Modal show={levelComingSoon} onHide={() => setLevelComingSoon(false)} centered>
+      <Modal
+        show={levelComingSoon}
+        onHide={() => setLevelComingSoon(false)}
+        centered
+      >
         <Modal.Header closeButton>
           <Modal.Title>🚧 Level {unavailableLevel} Coming Soon</Modal.Title>
         </Modal.Header>
-          <Modal.Body className="text-center">
-            <p>We're still working on Level {unavailableLevel}. It'll be ready soon!</p>
-            <div style={{ fontSize: "3rem" }}>🏗️👷‍♂️🚧</div>
-          </Modal.Body>
+        <Modal.Body className="text-center">
+          <p>
+            We're still working on Level {unavailableLevel}. It'll be ready
+            soon!
+          </p>
+          <div style={{ fontSize: "3rem" }}>🏗️👷‍♂️🚧</div>
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setLevelComingSoon(false)}>
             Back to Home
@@ -741,358 +719,544 @@ if (data.levelAvailable === false) {
         </Modal.Footer>
       </Modal>
 
-
-
-      <Modal show={showStreakLostModal} onHide={() => setShowStreakLostModal(false)} centered backdrop="static" keyboard={false}>
+      <Modal
+        show={showStreakLostModal}
+        onHide={() => setShowStreakLostModal(false)}
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
         <Modal.Header className="justify-content-center border-0">
           <Modal.Title className="fs-1 text-danger">💔 Uh-oh!</Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center">
           <p className="fs-2">Your fire is gone... 🔥❌</p>
-          <Image src={sadStreakImage} alt="streak lost" fluid style={{ maxHeight: '140px' }} className="my-3" />
+          <Image
+            src={sadStreakImage}
+            alt="streak lost"
+            fluid
+            style={{ maxHeight: "140px" }}
+            className="my-3"
+          />
           <p className="fs-3 text-secondary">You missed a day 😢</p>
           <div className="fs-1">💧💧💧</div>
         </Modal.Body>
         <Modal.Footer className="justify-content-center border-0">
-          <Button variant="warning" size="lg" onClick={() => {
-            setShowStreakLostModal(false);
-            setShowRestartStreakModal(true);
-          }}>
+          <Button
+            variant="warning"
+            size="lg"
+            onClick={() => {
+              setShowStreakLostModal(false);
+              setShowRestartStreakModal(true);
+            }}
+          >
             Next ➡️
           </Button>
         </Modal.Footer>
       </Modal>
 
-
-
-      <Modal show={showRestartStreakModal} onHide={() => setShowRestartStreakModal(false)} centered backdrop="static" keyboard={false}>
+      <Modal
+        show={showRestartStreakModal}
+        onHide={() => setShowRestartStreakModal(false)}
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
         <Modal.Header className="justify-content-center border-0">
           <Modal.Title className="fs-1 text-success">🌱 New Start!</Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center">
           <p className="fs-2">You can grow a new fire! 🔥</p>
-          <Image src={happyStreak} alt="new flame" fluid style={{ maxHeight: '130px' }} className="my-3" />
+          <Image
+            src={happyStreak}
+            alt="new flame"
+            fluid
+            style={{ maxHeight: "130px" }}
+            className="my-3"
+          />
           <p className="fs-4">Play today to begin again 💪</p>
         </Modal.Body>
         <Modal.Footer className="justify-content-center border-0">
-          <Button variant="primary" size="lg" onClick={() => {
-            setShowRestartStreakModal(false);
-          }}>
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => {
+              setShowRestartStreakModal(false);
+            }}
+          >
             Got it! 👍
           </Button>
         </Modal.Footer>
       </Modal>
 
-
-
-
-
-
-
-
-
-
-
-    <Modal show={showInstructions} onHide={() => setShowInstructions(false)} centered>
-  <Modal.Header closeButton>
-    <Modal.Title>📘 How to Play</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    <ul className="text-start">
-      <li>🌟 <strong>Stars</strong> – Spell a word correctly on your first try.</li>
-      <li>🔥 <strong>Streak</strong> – Earned by playing every day.</li>
-      <li>🎲 <strong>Cipher Lottery</strong> – Unlocks after a 3-day streak.</li>
-      <li>
-        <Image 
-          src={cipherKeyImage} 
-          alt="Cipher Key" 
-          style={{ width: "24px", height: "24px", marginRight: "8px", verticalAlign: "middle" }} 
-        />
-          <strong>Cipher Key</strong> – Win it by guessing the lottery number right.
-      </li>
-    </ul>
-  </Modal.Body>
-  <Modal.Footer>
-    <Button variant="primary" onClick={() => setShowInstructions(false)}>
-      Got it!
-    </Button>
-  </Modal.Footer>
-</Modal>
+      <Modal
+        show={showInstructions}
+        onHide={() => setShowInstructions(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>📘 How to Play</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <ul className="text-start">
+            <li>
+              🌟 <strong>Stars</strong> – Spell a word correctly on your first
+              try.
+            </li>
+            <li>
+              🔥 <strong>Streak</strong> – Earned by playing every day.
+            </li>
+            <li>
+              🎲 <strong>Cipher Lottery</strong> – Unlocks after a 3-day streak.
+            </li>
+            <li>
+              <Image
+                src={cipherKeyImage}
+                alt="Cipher Key"
+                style={{
+                  width: "24px",
+                  height: "24px",
+                  marginRight: "8px",
+                  verticalAlign: "middle",
+                }}
+              />
+              <strong>Cipher Key</strong> – Win it by guessing the lottery
+              number right.
+            </li>
+          </ul>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={() => setShowInstructions(false)}>
+            Got it!
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       <Card className="p-4">
-      <h1>Word Wizard</h1>
+        <h1>Word Wizard</h1>
 
-      <Button
-        variant="outline-secondary"
-        size="sm"
-        onClick={() => setShowInstructions(true)}
-        title="How to Play"
-        style={{ borderRadius: "50%" }}
-      >
-        <i className="bi bi-info-circle"></i>
-      </Button>
-        
-
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          onClick={() => setShowInstructions(true)}
+          title="How to Play"
+          style={{ borderRadius: "50%" }}
+        >
+          <i className="bi bi-info-circle"></i>
+        </Button>
 
         {/* Modal for cipherLottery */}
-        <Modal show={showCipherModal} onHide={() => setShowCipherModal(false)} centered backdrop="static" keyboard={false}>
-        <Modal.Header closeButton>
-        <Modal.Title>🔐 Cipher Lottery</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-        <p>Which number am i thinking between 1 and 5:</p>
-        <input
-          type="number"
-          className="form-control"
-          value={guess}
-          onChange={(e) => setGuess(e.target.value)}
-          min="1"
-          max="5"
-        />
-        {/* Show result inside modal */}
-        {showCipherAlert && <Alert variant={cipherMessage.includes("Correct") ? "success" : "danger"}>{cipherMessage}</Alert>}
+        <Modal
+          show={showCipherModal}
+          onHide={() => setShowCipherModal(false)}
+          centered
+          backdrop="static"
+          keyboard={false}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title className="fs-2">🎁 Treasure Pick!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="text-center">
+            <p className="fs-4">🤔 I'm thinking of a number</p>
+            <p className="fs-4">Guess right to win!!!</p>
+            <p className="fs-3">
+              🌟 Between <strong>1</strong> and <strong>5</strong>
+            </p>
 
-        {/*Show cipherKey image */}
-        {CipherKeyImage && (
-            <div className="text-center mt-3">
-            <Image src={cipherKeyImage} alt="Cipher Key" fluid style={{ maxWidth: "100%" }}/>
-              <p>You've won cipher key #{cipherKeyNumber}!</p>
-            </div>
-          )}
+            <input
+              type="number"
+              className="form-control form-control-lg w-50 mx-auto"
+              value={guess}
+              onChange={(e) => setGuess(e.target.value)}
+              min="1"
+              max="5"
+            />
 
+            {showCipherAlert && (
+              <Alert
+                variant={
+                  cipherMessage.includes("Correct") ? "success" : "danger"
+                }
+                className="mt-3 fs-5"
+              >
+                {cipherMessage.includes("Correct")
+                  ? "🎉 Yay! You won a cipher key!"
+                  : `😢 Try again next time!  ${randomNumber}`}
+              </Alert>
+            )}
 
+            {CipherKeyImage && (
+              <div className="text-center mt-3">
+                <Image
+                  src={cipherKeyImage}
+                  alt="Cipher Key"
+                  fluid
+                  style={{ maxHeight: "120px" }}
+                />
+                <p className="fs-5 text-success mt-2">
+                  You got Key #{cipherKeyNumber} 🗝️
+                </p>
+              </div>
+            )}
+          </Modal.Body>
 
+          <Modal.Footer className="justify-content-center">
+            <Button variant="primary" size="lg" onClick={handleGuess}>
+              🔍 Guess
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
+        {/* Modal for star Image */}
+        <Modal
+          show={showStarModal}
+          onHide={() => setShowStarModal(false)}
+          centered
+          backdrop="static"
+          keyboard={false}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>You've unlocked a new star!!!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {/*Show star image */}
+            {showStarModal && (
+              <div className="text-center mt-3">
+                <p>🌟 Boom! You just unlocked a golden star!</p>
+                <p className="stars">{currentDailyStars}</p>
+                <p>stars</p>
+                <Image
+                  src={starImage}
+                  alt="star"
+                  fluid
+                  style={{ maxWidth: "100%" }}
+                />
+              </div>
+            )}
+          </Modal.Body>
+        </Modal>
 
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="success" onClick={handleGuess}>
-          Submit Guess
-        </Button>
-      </Modal.Footer>
-
-    </Modal>
-
-
-            {/* Modal for star Image */}
-        <Modal show={showStarModal} onHide={() => setShowStarModal(false)} centered backdrop="static" keyboard={false}>
-        <Modal.Header closeButton>
-        <Modal.Title>You've unlocked a new star!!!</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-
-        {/*Show star image */}
-        {showStarModal && (
-            <div className="text-center mt-3">
-            <p>🌟 Boom! You just unlocked a golden star!</p>
-            <p className="stars">{currentDailyStars}</p>
-            <p>stars</p>
-            <Image src={starImage} alt="star" fluid style={{ maxWidth: "100%" }}/>
-             
-            </div>
-          )}
-      </Modal.Body>
-
-    </Modal>
-
-
-
-
-
-        
         {showAlert && (
           <Alert variant="danger" className="shake">
             ❌ Oops! That's incorrect. Try again! 🧐
           </Alert>
         )}
+
         {showCorrect && (
           <Alert variant="success" className="shake">
-          ✅ Hooray!!,You got it correct 😀
+            ✅ Hooray!!,You got it correct 😀
           </Alert>
         )}
-        <Modal show={showModal} onHide={() => setShowModal(false)} centered backdrop="static" keyboard={false}>
-           <Modal.Header closeButton>
-              <Modal.Title className="text-success">🎉 Word Revealed! 🎉</Modal.Title>
-          </Modal.Header>
-            <Modal.Body>
-              <h2 className="text-center text-primary">✅ The word is: {revealedWord}</h2>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={() => setShowModal(false)}>
-                Close
-              </Button>
-            </Modal.Footer>
-        </Modal>
 
+        <Modal
+          show={showModal}
+          onHide={() => setShowModal(false)}
+          centered
+          backdrop="static"
+          keyboard={false}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title className="text-success">
+              🎉 Word Revealed! 🎉
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <h2 className="text-center text-primary">
+              ✅ The word is: {revealedWord}
+            </h2>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
         {gameWon ? (
           <div>
-
             <div>
+              {/* Streak Modal */}
+              <Modal
+                show={showHighestStarsModal}
+                onHide={() => setShowHighestStarModal(false)}
+                centered
+                backdrop="static"
+                keyboard={false}
+              >
+                <Modal.Header className="justify-content-center border-0">
+                  <Modal.Title className="fs-1 text-warning">
+                    🏆 Your Record!
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                  <Image
+                    src={trophyImage}
+                    alt="Trophy"
+                    fluid
+                    style={{ maxHeight: "140px" }}
+                    className="mb-3"
+                  />
+                  <p className="fs-2 text-dark">
+                    ⭐ Best: <strong>{highestStars}</strong>
+                  </p>
+                  <p className="fs-2 text-primary">
+                    ⭐ Today: <strong>{currentDailyStars}</strong>
+                  </p>
+                  <div className="fs-1">🎉🎉🎉</div>
+                </Modal.Body>
+                <Modal.Footer className="justify-content-center border-0">
+                  <Button
+                    variant="warning"
+                    size="lg"
+                    onClick={() => {
+                      setShowHighestStarModal(false);
+                      setShowStarsTotalModal(true);
+                    }}
+                  >
+                    Next ➡️
+                  </Button>
+                </Modal.Footer>
+              </Modal>
 
+              {/* Stars Total Modal */}
+              <Modal
+                show={showStarsTotalModal}
+                onHide={() => setShowStarsTotalModal(false)}
+                centered
+                backdrop="static"
+                keyboard={false}
+              >
+                <Modal.Header className="justify-content-center border-0">
+                  <Modal.Title className="fs-1 text-primary">
+                    🌟 Total Stars!
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                  <Image
+                    src={starImage_2}
+                    alt="Star Pile"
+                    fluid
+                    style={{ maxHeight: "130px" }}
+                    className="mb-3"
+                  />
+                  <p className="fs-2">You have</p>
+                  <h1 className="display-3 text-warning">{stars} 🌟</h1>
+                  <p className="fs-4">Let’s collect more!</p>
+                  <div className="fs-1">🌟🌟🌟</div>
+                </Modal.Body>
+                <Modal.Footer className="justify-content-center border-0">
+                  <Button
+                    variant="success"
+                    size="lg"
+                    onClick={() => {
+                      setShowStarsTotalModal(false);
+                      setShowCipherCountdownModal(true);
+                    }}
+                  >
+                    Got it!! ▶️
+                  </Button>
+                </Modal.Footer>
+              </Modal>
 
+              {/* magic number countdown*/}
+              <Modal
+                show={showCipherCountdownModal}
+                onHide={() => setShowCipherCountdownModal(false)}
+                centered
+                backdrop="static"
+                keyboard={false}
+              >
+                <Modal.Header className="justify-content-center border-0">
+                  <Modal.Title className="fs-1 text-warning">
+                    ⏳ Almost There!
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                  <p className="fs-2">
+                    You’re 1 day away from playing 🎁{" "}
+                    <strong>Magic Number!</strong>
+                  </p>
+                  <Image
+                    src={cipherKeyImage} // or another exciting image like a treasure chest or sparkles
+                    alt="Magic Key"
+                    fluid
+                    style={{ maxHeight: "150px" }}
+                    className="my-3"
+                  />
+                  <p className="fs-4 text-primary">
+                    Keep your 🔥 fire going tomorrow
+                  </p>
+                  <p className="fs-3">
+                    And you’ll unlock the surprise game! 🎉
+                  </p>
+                  <div style={{ fontSize: "2.5rem" }}>🧙‍♂️🔢🎉</div>
+                </Modal.Body>
+                <Modal.Footer className="justify-content-center border-0">
+                  <Button
+                    variant="success"
+                    size="lg"
+                    onClick={() => {
+                      setShowCipherCountdownModal(false);
+                      setShowStreakCelebrationModal(true);
+                    }}
+                  >
+                    Got it! 👍
+                  </Button>
+                </Modal.Footer>
+              </Modal>
 
-                                  {/* Streak Modal */}
-<Modal show={showHighestStarsModal} onHide={() => setShowHighestStarModal(false)} centered backdrop="static" keyboard={false}>
-  <Modal.Header className="justify-content-center border-0">
-    <Modal.Title className="fs-1 text-warning">🏆 Your Record!</Modal.Title>
-  </Modal.Header>
-  <Modal.Body className="text-center">
-    <Image src={trophyImage} alt="Trophy" fluid style={{ maxHeight: '140px' }} className="mb-3" />
-    <p className="fs-2 text-dark">⭐ Best: <strong>{highestStars}</strong></p>
-    <p className="fs-2 text-primary">⭐ Today: <strong>{currentDailyStars}</strong></p>
-    <div className="fs-1">🎉🎉🎉</div>
-  </Modal.Body>
-  <Modal.Footer className="justify-content-center border-0">
-    <Button variant="warning" size="lg" onClick={() => {
-      setShowHighestStarModal(false);
-      setShowStarsTotalModal(true);
-    }}>
-      Next ➡️
-    </Button>
-  </Modal.Footer>
-</Modal>
-
-
-
-                      {/* Stars Total Modal */}
-<Modal show={showStarsTotalModal} onHide={() => setShowStarsTotalModal(false)} centered backdrop="static" keyboard={false}>
-  <Modal.Header className="justify-content-center border-0">
-    <Modal.Title className="fs-1 text-primary">🌟 Total Stars!</Modal.Title>
-  </Modal.Header>
-  <Modal.Body className="text-center">
-    <Image src={starImage_2} alt="Star Pile" fluid style={{ maxHeight: '130px' }} className="mb-3" />
-    <p className="fs-2">You have</p>
-    <h1 className="display-3 text-warning">{stars} 🌟</h1>
-    <p className="fs-4">Let’s collect more!</p>
-    <div className="fs-1">🌟🌟🌟</div>
-  </Modal.Body>
-  <Modal.Footer className="justify-content-center border-0">
-    <Button variant="success" size="lg" onClick={() => {
-      setShowStarsTotalModal(false);
-      setShowStreakCelebrationModal(true);
-      
-    }}>
-      Got it!! ▶️
-    </Button>
-  </Modal.Footer>
-</Modal>
-
-
-
-
-<Modal show={showStreakCelebrationModal} onHide={()=> setShowStreakCelebrationModal(false)} centered backdrop="static" keyboard={false}>
-  <Modal.Header className="justify-content-center border-0">
-    <Modal.Title className="fs-1 text-warning">🔥 Streak!</Modal.Title>
-  </Modal.Header>
-  <Modal.Body className="text-center">
-    <Image src={happyStreak} alt="Streak Fire" fluid style={{ maxHeight: '150px' }} className="mb-3" />
-    <p className="fs-2">You’ve played</p>
-    <h1 className="display-2 text-danger">{streak} Days</h1>
-    <p className="fs-3">in a row! 🔥</p>
-    <div className="fs-1 mt-2">🔥🔥🔥</div>
-  </Modal.Body>
-  <Modal.Footer className="justify-content-center border-0">
-    <Button variant="success" size="lg" onClick={async () => {
-      setShowStreakCelebrationModal(false);
-      setShowHighestStarModal(true);
-      await startGame();
-    }}>
-      Play Next Level ➡️
-    </Button>
-  </Modal.Footer>
-</Modal>
-
-
-
-
-
+              {/* streak celebration modal*/}
+              <Modal
+                show={showStreakCelebrationModal}
+                onHide={() => setShowStreakCelebrationModal(false)}
+                centered
+                backdrop="static"
+                keyboard={false}
+              >
+                <Modal.Header className="justify-content-center border-0">
+                  <Modal.Title className="fs-1 text-warning">
+                    🔥 Streak!
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                  <Image
+                    src={happyStreak}
+                    alt="Streak Fire"
+                    fluid
+                    style={{ maxHeight: "150px" }}
+                    className="mb-3"
+                  />
+                  <p className="fs-2">You’ve played</p>
+                  <h1 className="display-2 text-danger">{streak} Days</h1>
+                  <p className="fs-3">in a row! 🔥</p>
+                  <div className="fs-1 mt-2">🔥🔥🔥</div>
+                </Modal.Body>
+                <Modal.Footer className="justify-content-center border-0">
+                  <Button
+                    variant="success"
+                    size="lg"
+                    onClick={async () => {
+                      setShowStreakCelebrationModal(false);
+                      setShowHighestStarModal(true);
+                      await startGame();
+                    }}
+                  >
+                    Play Next Level ➡️
+                  </Button>
+                </Modal.Footer>
+              </Modal>
             </div>
 
-          <h2>🎉 Congratulations! You've won the game! 🎉</h2>
-          <p className="austro">
-          🏁 "Another level down! Fun fact: Even astronauts need good spelling!
-           You wouldn’t want to mix up ‘launch’ and ‘lunch’ in space! 🚀😄"
-          </p>
-          {streak === 1 && <p className="color-text">🎉 Welcome! You've started your streak! Keep going!</p>}
-          {streak === 0 && <p className="color-text">You missed a few days. Your streak has been reset to 0.</p>}
-          {streak > 0 && <p className="color-text">Keep it up! You're on a {streak}-day streak! , Play 3 days in a row(3-day streak) to unlock a suprise</p>}
-          
-          
-          
-              {/* Only show Go To Next Level button if no cipher lottery is pending */}
-          {!showCipherModal && (
-            <Button onClick={startGame} variant="primary">Go To Next Level</Button>
-          )}
+            <h2>🎉 Congratulations! You've won the game! 🎉</h2>
+            <p className="austro">
+              🏁 "Another level down! Fun fact: Even astronauts need good
+              spelling! You wouldn’t want to mix up ‘launch’ and ‘lunch’ in
+              space! 🚀😄"
+            </p>
+            {streak === 1 && (
+              <p className="color-text">
+                🎉 Welcome! You've started your streak! Keep going!
+              </p>
+            )}
+            {streak === 0 && (
+              <p className="color-text">
+                You missed a few days. Your streak has been reset to 0.
+              </p>
+            )}
+            {streak > 0 && (
+              <p className="color-text">
+                Keep it up! You're on a {streak}-day streak! , Play 3 days in a
+                row(3-day streak) to unlock a suprise
+              </p>
+            )}
+
+            {/* Only show Go To Next Level button if no cipher lottery is pending */}
+            {!showCipherModal && (
+              <Button onClick={startGame} variant="primary">
+                Go To Next Level
+              </Button>
+            )}
           </div>
         ) : gameLost ? (
           <>
             <h2>😔 You've Lost! 😔</h2>
             <p>You got six incorrect attempts on a word.</p>
-            <Button onClick={startGame} variant="primary">Restart Game</Button>
+            <Button onClick={startGame} variant="primary">
+              Restart Game
+            </Button>
           </>
         ) : currentWord === "" ? (
-      <Button onClick={startGame} variant="primary" disabled={isLoading}>
-      {isLoading ? (
-      <>
-        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
-          Loading...
-       </>
-      ) : (
-        "Start Game"
-        )}
-      </Button>
-
-        ) :
-      
-       (
+          <Button onClick={startGame} variant="primary" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                />
+                Loading...
+              </>
+            ) : (
+              "Start Game"
+            )}
+          </Button>
+        ) : (
           <>
-          <Navbar bg="light" className="sticky-top shadow-sm">
-            <Container className="justify-content-center">
-              <div className="d-flex gap-4 fs-5">
-                <span>⭐ {stars}</span>
-                <span>🗝️ {cipherKeys}</span>
-                <span>🔥 {streak}</span>
-                <span>Level {level}</span>
-              </div>
+            <Navbar bg="light" className="sticky-top shadow-sm">
+              <Container className="justify-content-center">
+                <div className="d-flex gap-4 fs-5">
+                  <span>⭐ {stars}</span>
+                  <span>🗝️ {cipherKeys}</span>
+                  <span>🔥 {streak}</span>
+                  <span>Level {level}</span>
+                </div>
               </Container>
             </Navbar>
             <h2>Listen carefully to the word and spell it:</h2>
 
             {/* Progress Bar */}
             <div className="mb-4">
-                <h4>Progress: {progress.toFixed(0)}%</h4>
-                <ProgressBar now={progress} label={`${Math.round(progress)}%`} className="mb-3" />
+              <h4>Progress: {progress.toFixed(0)}%</h4>
+              <ProgressBar
+                now={progress}
+                label={`${Math.round(progress)}%`}
+                className="mb-3"
+              />
             </div>
 
-
-
-            <Button 
-              onClick={() => speakWord(currentWord)} 
-              variant="info" 
+            <Button
+              onClick={() => speakWord(currentWord)}
+              variant="info"
               className="mb-3"
               disabled={isSpeakingDisabled}
             >
               🔊 Repeat Word {isSpeakingDisabled ? " (Wait...)" : ""}
             </Button>
-          {imageURL && (
-            <div style={{ display: "flex", justifyContent: "center", marginTop: "20px", marginBottom: "20px" }}>
-              <img
-                src={imageURL}
-                alt={currentWord}
-                style={{ width: "200px", height: "200px" }}
-              />
-            </div>
-          )}
-            
+            {imageURL && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginTop: "20px",
+                  marginBottom: "20px",
+                }}
+              >
+                <img
+                  src={imageURL}
+                  alt={currentWord}
+                  style={{ width: "200px", height: "200px" }}
+                />
+              </div>
+            )}
+
             <div className="hint-section">
               <h4>Your Hint:</h4>
               <Form.Label className="hint-label">{hint}</Form.Label>
             </div>
 
-            <Button 
-              onClick={handleHintClick} 
-              variant="warning" 
+            <Button
+              onClick={handleHintClick}
+              variant="warning"
               className="mt-2"
               disabled={hintClicks >= 4}
             >
@@ -1100,11 +1264,7 @@ if (data.levelAvailable === false) {
             </Button>
 
             {maxHintsBool === true && (
-              <Button 
-                onClick={revealWord} 
-                variant="success" 
-                className="mt-2"
-              >
+              <Button onClick={revealWord} variant="success" className="mt-2">
                 Reveal Word
               </Button>
             )}
@@ -1123,7 +1283,9 @@ if (data.levelAvailable === false) {
             <Form.Label>
               You typed: <strong>{userInput}</strong>
             </Form.Label>
-            <Button variant="success" onClick={checkSpelling}>Submit</Button>
+            <Button variant="success" onClick={checkSpelling}>
+              Submit
+            </Button>
             <p className="mt-3">{message}</p>
             <p>Incorrect Attempts: {incorrectAttempts} / 6</p>
           </>
@@ -1134,20 +1296,3 @@ if (data.levelAvailable === false) {
 }
 
 export default SpellingGame;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
