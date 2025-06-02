@@ -33,23 +33,23 @@ function Login() {
     }
 
     // Admin override
-    if (
-      data.username === "maijawethato06@gmail.com" &&
-      data.pin === "2001"
-    ) {
+    if (data.username === "maijawethato06@gmail.com" && data.pin === "2001") {
       navigate("/admin");
       return;
     }
 
     const sendDataToServer = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        });
+        const response = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          }
+        );
 
         const result = await response.json();
 
@@ -58,7 +58,7 @@ function Login() {
         } else {
           const token = result.token;
           sessionStorage.setItem("token", token);
-          navigate("/home");
+          navigate("/map");
         }
       } catch (error) {
         console.error("Error during login:", error);
@@ -85,9 +85,15 @@ function Login() {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              <Nav.Link as={Link} to="/contact">Contacts</Nav.Link>
-              <Nav.Link as={Link} to="/">Home</Nav.Link>
-              <Nav.Link as={Link} to="/register">Registration</Nav.Link>
+              <Nav.Link as={Link} to="/contact">
+                Contacts
+              </Nav.Link>
+              <Nav.Link as={Link} to="/">
+                Home
+              </Nav.Link>
+              <Nav.Link as={Link} to="/register">
+                Registration
+              </Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>
@@ -125,11 +131,13 @@ function Login() {
           </Button>
           <Form.Text className="text-center d-block mt-3">
             Don’t have an account?{" "}
-            <Link to="/register" className="text-decoration-none fw-bold text-primary">
-            Register here
+            <Link
+              to="/register"
+              className="text-decoration-none fw-bold text-primary"
+            >
+              Register here
             </Link>
           </Form.Text>
-
         </Form>
       </Container>
     </div>

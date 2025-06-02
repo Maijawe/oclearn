@@ -1,48 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { Container, Table, Spinner, Form, Button, Alert } from "react-bootstrap";
-
+import {
+  Container,
+  Table,
+  Spinner,
+  Form,
+  Button,
+  Alert,
+} from "react-bootstrap";
 
 function AdminDashboard() {
-
   const [loading, setLoading] = useState(true);
   const [level, setLevel] = useState("");
   const [words, setWords] = useState([""]);
   const [submitStatus, setSubmitStatus] = useState(null);
   const [analyticsData, setAnalyticsData] = useState([]);
 
+  useEffect(() => {
+    const fetchAllAnalytics = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/analytics/all`
+        );
+        const data = await res.json();
+        setAnalyticsData(data);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching all analytics:", err);
+        setLoading(false);
+      }
+    };
 
-useEffect(() => {
-  const fetchAllAnalytics = async () => {
-    try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/analytics/all`);
-      const data = await res.json();
-      setAnalyticsData(data);
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching all analytics:", err);
-      setLoading(false);
-    }
-  };
-
-  fetchAllAnalytics();
-}, []);
+    fetchAllAnalytics();
+  }, []);
 
   const handleAddLevel = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/levels`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ level: parseInt(level), words }),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/levels`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ level: parseInt(level), words }),
+        }
+      );
 
       const result = await response.json();
       if (response.ok) {
-        setSubmitStatus({ success: true, message: "Level added successfully!" });
+        setSubmitStatus({
+          success: true,
+          message: "Level added successfully!",
+        });
         setLevel("");
         setWords([""]);
       } else {
-        setSubmitStatus({ success: false, message: result.message || "Error adding level" });
+        setSubmitStatus({
+          success: false,
+          message: result.message || "Error adding level",
+        });
       }
     } catch (err) {
       setSubmitStatus({ success: false, message: "Server error" });
@@ -68,33 +83,32 @@ useEffect(() => {
           <Spinner animation="border" />
         </div>
       ) : (
-      <Table bordered hover responsive className="text-center mt-4">
-        <thead className="table-dark">
-          <tr>
-            <th>📅 Date</th>
-            <th>👤 Daily Users</th>
-            <th>⏱ Avg Session (s)</th>
-            <th>🔥 Streak: &lt;3</th>
-            <th>🔥 Streak: 3–20</th>
-            <th>🔥 Streak: 21–40</th>
-            <th>🔥 Streak: &gt;40</th>
-          </tr>
-        </thead>
-        <tbody>
-          {analyticsData.map((entry) => (
-            <tr key={entry._id}>
-              <td>{entry.date}</td>
-              <td>{entry.dailyActiveUsers}</td>
-              <td>{entry.averageSessionDuration}</td>
-              <td>{entry.streakCohorts?.under3 || 0}</td>
-              <td>{entry.streakCohorts?.between3And20 || 0}</td>
-              <td>{entry.streakCohorts?.between21And40 || 0}</td>
-              <td>{entry.streakCohorts?.over40 || 0}</td>
+        <Table bordered hover responsive className="text-center mt-4">
+          <thead className="table-dark">
+            <tr>
+              <th>📅 Date</th>
+              <th>👤 Daily Users</th>
+              <th>⏱ Avg Session (s)</th>
+              <th>🔥 Streak: &lt;3</th>
+              <th>🔥 Streak: 3–20</th>
+              <th>🔥 Streak: 21–40</th>
+              <th>🔥 Streak: &gt;40</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
-
+          </thead>
+          <tbody>
+            {analyticsData.map((entry) => (
+              <tr key={entry._id}>
+                <td>{entry.date}</td>
+                <td>{entry.dailyActiveUsers}</td>
+                <td>{entry.averageSessionDuration}</td>
+                <td>{entry.streakCohorts?.under3 || 0}</td>
+                <td>{entry.streakCohorts?.between3And20 || 0}</td>
+                <td>{entry.streakCohorts?.between21And40 || 0}</td>
+                <td>{entry.streakCohorts?.over40 || 0}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
       )}
 
       <hr />
@@ -135,7 +149,10 @@ useEffect(() => {
       </Form>
 
       {submitStatus && (
-        <Alert className="mt-3" variant={submitStatus.success ? "success" : "danger"}>
+        <Alert
+          className="mt-3"
+          variant={submitStatus.success ? "success" : "danger"}
+        >
           {submitStatus.message}
         </Alert>
       )}
@@ -144,5 +161,3 @@ useEffect(() => {
 }
 
 export default AdminDashboard;
-
-

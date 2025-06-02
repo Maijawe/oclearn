@@ -20,7 +20,11 @@ import sadStreakImage from "./images/sadStreak.png";
 import happyStreak from "./images/happyStreak.png";
 import starImage_2 from "./images/star.png";
 import trophyImage from "./images/trophy.png";
-import starImage from "./images/goldenStar.jpg";
+import purpleFogVillagersImg from "./images/SleepyVillagers.png";
+import starImage from "./images/powercell.png";
+import codeUnlockedImg from "./images/codeUnlocked.png";
+import happyVillagersImage from "./images/totalVillagers.png";
+import vaultOpenImg from "./images/heroicRescue.png";
 import correctSound from "./sounds/success.mp3";
 import winner from "./sounds/winner.wav";
 import cipherSound from "./sounds/cipherKeySound.wav";
@@ -69,6 +73,11 @@ function SpellingGame() {
   const [levelComingSoon, setLevelComingSoon] = useState(false);
   const [unavailableLevel, setUnavailableLevel] = useState(null);
   const [randomNumber, setRandomNumber] = useState(0);
+  const [villagers, setVillagers] = useState(500);
+  const [wasCipherKeyUsed, setWasCipherKeyUsed] = useState(false);
+  const [showCipherUnlockOption, setShowCipherUnlockOption] = useState(false);
+  const [showVillagerSaveModal, setShowVillagerSaveModal] = useState(false);
+  const [savedNow, setSavedNow] = useState(0); // how many villagers saved in this action
 
   // Modal controls
   const [showStreakCelebrationModal, setShowStreakCelebrationModal] =
@@ -77,10 +86,42 @@ function SpellingGame() {
   const [showHighestStarsModal, setShowHighestStarModal] = useState(false);
   const [showStreakLostModal, setShowStreakLostModal] = useState(false);
   const [showRestartStreakModal, setShowRestartStreakModal] = useState(false);
+  const [showVictoryModal, setShowVictoryModal] = useState(false);
   const [showCipherCountdownModal, setShowCipherCountdownModal] =
     useState(false);
 
+  const [showVillagersLeftModal, setShowVillagersLeftModal] = useState(false);
+  const [showCodeUnlockedModal, setShowCodeUnlockedModal] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
+
+  const saveVillagersWithPowerCells = () => {
+    if (stars === 0) {
+      setMessage("You have no power cells to save villagers.");
+      return;
+    }
+
+    const maxSavable = 500 - villagers;
+    const villagersToSave = Math.min(stars, maxSavable);
+
+    if (villagersToSave === 0) {
+      setMessage("All villagers are already safe!");
+      return;
+    }
+
+    setVillagers((prev) => prev + villagersToSave);
+    setStars((prev) => prev - villagersToSave);
+    setSavedNow(villagersToSave);
+    setShowVillagerSaveModal(true);
+    modalVoiceOver(`You saved ${villagersToSave} villagers!`);
+  };
+
+  const playCipherSound = () => {
+    const audio = new Audio(cipherSound);
+    audio.play().catch((err) => {
+      console.error("Audio play failed:", err);
+    });
+  };
 
   //modal voice-over
   const modalVoiceOver = (text) => {
@@ -92,6 +133,10 @@ function SpellingGame() {
     utterance.rate = 0.85; // Slower for young learners
     window.speechSynthesis.speak(utterance);
   };
+
+  useEffect(() => {
+    console.log("🔥 gameWon updated to:", gameWon);
+  }, [gameWon]);
 
   useEffect(() => {
     if (showStreakCelebrationModal) {
@@ -110,20 +155,30 @@ function SpellingGame() {
   useEffect(() => {
     if (showHighestStarsModal) {
       modalVoiceOver(
-        `Your best score is ${highestStars} stars. Today, you got ${currentDailyStars} stars.`
+        `Your best score is ${highestStars} power cells. Today, you got ${currentDailyStars} power cells.`
       );
     }
   }, [showHighestStarsModal]);
 
   useEffect(() => {
+    if (showVillagersLeftModal) {
+      modalVoiceOver(
+        `Your have saved ${villagers} villagers. Play everyday to protect them from the fog`
+      );
+    }
+  }, [showVillagersLeftModal]);
+
+  useEffect(() => {
     if (showStarsTotalModal) {
-      modalVoiceOver(`You have ${stars} stars! Keep going!`);
+      modalVoiceOver(`You have ${stars} power cells! Keep going!`);
     }
   }, [showStarsTotalModal]);
 
   useEffect(() => {
     if (showStreakLostModal) {
-      modalVoiceOver("Oh no! You missed a day. Your fire is gone.");
+      modalVoiceOver(
+        "Oh no! You lost 10 villagers because you unlock any doors yesterday.."
+      );
     }
   }, [showStreakLostModal]);
 
@@ -178,7 +233,7 @@ function SpellingGame() {
 
   //random function for cipherKey
   const handleGuess = () => {
-    const updatedCipherStreak = cipherStreak - 2;
+    const updatedCipherStreak = cipherStreak - 1;
     let updatedCipherKeys = cipherKeys;
     //setCipherStreaks(newCipherStreak);
     const randomKey = Math.floor(Math.random() * 5) + 1;
@@ -281,7 +336,7 @@ function SpellingGame() {
       setLevel(newLevel);
       setIsDataFetched(false);
 
-      setShowHighestStarModal(true);
+      setShowVictoryModal(true);
 
       //send data to backend
       const sendData = async () => {
@@ -296,6 +351,7 @@ function SpellingGame() {
           stars: stars,
           wordsIknow: wordsIKnow,
           currentDailyStars: currentDailyStars,
+          villagers: villagers,
         };
         console.log("data level Words: " + details.wordsIknow);
 
@@ -326,8 +382,6 @@ function SpellingGame() {
       // Call the function when needed
       sendData();
 
-      // Reset game state for the next level
-      setGameWon(false); // Reset gameWon to false after handling
       setMessage("🎉 You won the game! Moving to the next level...");
 
       // Fetch new game data for the next level
@@ -434,6 +488,7 @@ function SpellingGame() {
     setLevel(data.level);
     setHighestStars(data.highestStars);
     setCipherStreak(data.cipherStreak);
+    setVillagers(data.villagers);
     setIsDataFetched(true); // still keep for future use
     console.log("LEVEL WORDS for level", data.level, ":", data.levelWords);
 
@@ -450,7 +505,7 @@ function SpellingGame() {
       const sadSound = new Audio(lostStreakSound);
       sadSound.play();
       setShowStreakLostModal(true);
-    } else if (freshData && freshData.cipherStreak >= 2) {
+    } else if (freshData && freshData.cipherStreak >= 1) {
       getCipherKey();
       setIsLoading(false);
       return;
@@ -575,10 +630,22 @@ function SpellingGame() {
       setIncorrectAttempts((prev) => {
         const newAttempts = prev + 1;
 
+        if (newAttempts === 1) {
+          if (cipherKeys > 0) {
+            setMessage("❌ Incorrect! Want to unlock using a cipher key?");
+            setShowCipherUnlockOption(true);
+            modalVoiceOver("Incorrect.use a cipher key to unlock the code?");
+          } else {
+            setMessage("❌ Incorrect! Try again.");
+            setShowCipherUnlockOption(false);
+          }
+        }
+
         // Allow two attempts, after which reveal the word
-        if (newAttempts === 2) {
-          setMessage("❌ Incorrect! The correct word is revealed.");
+        else if (newAttempts === 2) {
+          setMessage("❌ Incorrect! The correct code is revealed.");
           revealWord(); // Reveal the word and move to the next one
+          setShowCipherUnlockOption(false);
           return 0; // Reset incorrect attempts
         } else {
           setMessage("❌ Incorrect! Try again.");
@@ -656,47 +723,178 @@ function SpellingGame() {
     speechSynthesis.speak(utterance);
   };
 
-  const revealWord = () => {
-    // Reveal the current word
+  const revealWord = (wasCipherKeyUsed = false) => {
     setRevealedWord(currentWord);
     speakPhonetically(currentWord);
-    setMessage(`✅ The word is: ${currentWord}`);
-    setShowModal(true);
+    setMessage(`✅ The code is: ${currentWord}`);
+    if (!wasCipherKeyUsed) {
+      setShowModal(true); // only show when not using cipher key
+    }
+    setShowCipherUnlockOption(false);
 
-    // Move the revealed word to the end of the levelWords array
-    let updatedLevelWords = levelWords.filter((word) => word !== currentWord); // Remove the word from its current position
-    updatedLevelWords.push(currentWord); // Add it to the end of the array
+    let updatedLevelWords = levelWords.filter((word) => word !== currentWord);
 
-    // Update the state with the new levelWords array
+    if (wasCipherKeyUsed) {
+      setWordsIKnow((prev) => [...prev, currentWord]);
+      // Don't push to levelWords again
+    } else {
+      setWordsIDontKnow((prev) => [...prev, currentWord]);
+      updatedLevelWords.push(currentWord); // re-try later
+    }
+
     setLevelWords(updatedLevelWords);
-
-    // Move the word to the "Don't Know" list
-    let updatedWordsIDontKnow = [...wordsIDontKnow, currentWord];
-    setWordsIDontKnow(updatedWordsIDontKnow);
-
-    //push word to revealedWords array
     setRevealedWords((prev) => [...prev, currentWord]);
 
-    // Find the next word to display
     setTimeout(() => {
-      let nextWord = updatedLevelWords[0] || null; // Always pick the first word from the updated levelWords array
+      let nextWord = updatedLevelWords[0] || null;
 
       if (nextWord) {
         setCurrentWord(nextWord);
         setHint("");
         speakWord(nextWord);
       } else {
-        setGameWon(true); // If no words are left, the game is won
+        setGameWon(true);
       }
 
-      // Reset input and hints
       setUserInput("");
       setHintClicks(0);
-    }, 2000); // Give time for the user to see the revealed word
+      setWasCipherKeyUsed(false);
+    }, 2000);
+  };
+
+  //use cipher key to unlock a word
+  const useCipherKey = async () => {
+    try {
+      if (cipherKeys <= 0) {
+        setMessage("❌ You have no cipher keys!");
+        // Optional: play error sound or trigger animation here
+        return;
+      }
+      const token = sessionStorage.getItem("token");
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/use-cipher-key`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Failed to use cipher key");
+
+      setCipherKeys(data.cipherKeys);
+      setShowCipherUnlockOption(false);
+
+      // Just set once — inside revealWord will also set it
+      setWordsIKnow((prev) => [...prev, currentWord]);
+
+      // 🧠 Check if it's the last word BEFORE revealing
+      const remainingWords = levelWords.filter((word) => word !== currentWord);
+      const isLastWord = remainingWords.length === 0;
+
+      setWasCipherKeyUsed(true); // so revealWord knows not to show "word revealed"
+
+      revealWord(true); // trigger unlock
+      playCipherSound();
+      setShowCodeUnlockedModal(true); // custom modal
+      setMessage("🔓 Word unlocked using a cipher key!");
+      // ⏱ Auto-close after 3 seconds
+      setTimeout(() => {
+        setShowCodeUnlockedModal(false);
+      }, 3000);
+
+      if (isLastWord) {
+        setTimeout(() => {
+          setGameWon(true); // safety fallback to trigger modals
+        }, 2200); // after revealWord runs its own timeout
+      }
+
+      setMessage("🔓 Word unlocked using a cipher key!");
+    } catch (err) {
+      console.error("Error using cipher key:", err);
+      setMessage("⚠️ Something went wrong using the cipher key.");
+    }
   };
 
   return (
     <Container className="text-center mt-5">
+      <Modal
+        show={showVillagerSaveModal}
+        onHide={() => setShowVillagerSaveModal(false)}
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header className="justify-content-center border-0">
+          <Modal.Title className="fs-1 text-success">
+            👨‍🌾 Villagers Saved!
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <Image
+            src={happyVillagersImage}
+            alt="Happy Villagers"
+            fluid
+            style={{ maxHeight: "140px" }}
+            className="mb-3"
+          />
+          <p className="fs-2 text-primary">
+            You just saved <strong>{savedNow}</strong> villagers!
+          </p>
+          <p className="fs-4">
+            Total safe villagers: <strong>{villagers}</strong> / 500 👨‍🌾
+          </p>
+          <div className="fs-1">💚💚💚</div>
+        </Modal.Body>
+        <Modal.Footer className="justify-content-center border-0">
+          <Button
+            variant="success"
+            size="lg"
+            onClick={() => setShowVillagerSaveModal(false)}
+          >
+            Awesome! 🚀
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={showCodeUnlockedModal}
+        onHide={() => setShowCodeUnlockedModal(false)}
+        centered
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header className="justify-content-center border-0">
+          <Modal.Title className="fs-1 text-info">🧠 Code Cracked!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center">
+          <Image
+            src={codeUnlockedImg} // Use a fun animated lock image
+            alt="Code Cracked"
+            fluid
+            style={{ maxHeight: "200px" }}
+            className="my-3"
+          />
+          <p className="fs-2 text-primary">You unlocked the code!</p>
+          <h1 className="display-3 text-success">{currentWord}</h1>
+          <p className="fs-4 text-secondary">Let’s keep saving villagers!</p>
+          <div style={{ fontSize: "2rem" }}>🔓✨💪</div>
+        </Modal.Body>
+        <Modal.Footer className="justify-content-center border-0">
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => setShowCodeUnlockedModal(false)}
+          >
+            Next ➡️
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       <Modal
         show={levelComingSoon}
         onHide={() => setLevelComingSoon(false)}
@@ -727,18 +925,23 @@ function SpellingGame() {
         keyboard={false}
       >
         <Modal.Header className="justify-content-center border-0">
-          <Modal.Title className="fs-1 text-danger">💔 Uh-oh!</Modal.Title>
+          <Modal.Title className="fs-1 text-purple">💤 Oh no...</Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center">
-          <p className="fs-2">Your fire is gone... 🔥❌</p>
+          <p className="fs-2 text-dark">
+            The <span className="text-purple">Purple Fog</span> attacked!
+          </p>
           <Image
-            src={sadStreakImage}
-            alt="streak lost"
+            src={purpleFogVillagersImg} // 🖼️ your fog + villagers image
+            alt="Purple Fog Attack"
             fluid
-            style={{ maxHeight: "140px" }}
+            style={{ maxHeight: "400px" }}
             className="my-3"
           />
-          <p className="fs-3 text-secondary">You missed a day 😢</p>
+          <p className="fs-3">
+            10 villagers <strong>were attacked by the fog</strong> because you
+            didn't unlock any doors yesterday 😴
+          </p>
           <div className="fs-1">💧💧💧</div>
         </Modal.Body>
         <Modal.Footer className="justify-content-center border-0">
@@ -766,7 +969,7 @@ function SpellingGame() {
           <Modal.Title className="fs-1 text-success">🌱 New Start!</Modal.Title>
         </Modal.Header>
         <Modal.Body className="text-center">
-          <p className="fs-2">You can grow a new fire! 🔥</p>
+          <p className="fs-2">Protect Your Villagers! 👨‍🌾 </p>
           <Image
             src={happyStreak}
             alt="new flame"
@@ -774,7 +977,7 @@ function SpellingGame() {
             style={{ maxHeight: "130px" }}
             className="my-3"
           />
-          <p className="fs-4">Play today to begin again 💪</p>
+          <p className="fs-4">Unlock Doors On A Daily Basis 💪</p>
         </Modal.Body>
         <Modal.Footer className="justify-content-center border-0">
           <Button
@@ -832,8 +1035,20 @@ function SpellingGame() {
         </Modal.Footer>
       </Modal>
 
-      <Card className="p-4">
-        <h1>Word Wizard</h1>
+      <Card
+        className="p-4 vault-card"
+        style={{
+          backgroundImage: `url(${require("./images/secret-door.png")})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          borderRadius: "20px",
+          position: "relative",
+          padding: "2rem",
+          color: "#fff",
+          boxShadow: "0 0 15px black",
+        }}
+      >
+        <h1>Fog Fighters</h1>
 
         <Button
           variant="outline-secondary"
@@ -858,7 +1073,9 @@ function SpellingGame() {
           </Modal.Header>
           <Modal.Body className="text-center">
             <p className="fs-4">🤔 I'm thinking of a number</p>
-            <p className="fs-4">Guess right to win!!!</p>
+            <p className="fs-4">
+              Guess right to win a <strong>Cipher key!!!</strong>
+            </p>
             <p className="fs-3">
               🌟 Between <strong>1</strong> and <strong>5</strong>
             </p>
@@ -922,7 +1139,7 @@ function SpellingGame() {
             {/*Show star image */}
             {showStarModal && (
               <div className="text-center mt-3">
-                <p>🌟 Boom! You just unlocked a golden star!</p>
+                <p>🔋 Boom! You just unlocked a power cell!</p>
                 <p className="stars">{currentDailyStars}</p>
                 <p>stars</p>
                 <Image
@@ -957,12 +1174,12 @@ function SpellingGame() {
         >
           <Modal.Header closeButton>
             <Modal.Title className="text-success">
-              🎉 Word Revealed! 🎉
+              🎉 Code Revealed! 🎉
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <h2 className="text-center text-primary">
-              ✅ The word is: {revealedWord}
+              ✅ The code is: {revealedWord}
             </h2>
           </Modal.Body>
           <Modal.Footer>
@@ -975,6 +1192,89 @@ function SpellingGame() {
         {gameWon ? (
           <div>
             <div>
+              {/*open door modal */}
+              <Modal
+                show={showVictoryModal}
+                onHide={() => setShowVictoryModal(false)}
+                centered
+                backdrop="static"
+                keyboard={false}
+              >
+                <Modal.Header className="justify-content-center border-0">
+                  <Modal.Title className="fs-1 text-success text-center w-100">
+                    ✅ UNLOCKED!
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                  <Image
+                    src={vaultOpenImg}
+                    alt="Vault Opened"
+                    fluid
+                    style={{
+                      maxHeight: "350px",
+                      width: "100%",
+                      objectFit: "contain",
+                    }}
+                    className="my-3"
+                  />
+                  <p className="fs-1 text-primary">🎉 Awesome Job!</p>
+                  <p className="fs-2 text-success">🚪 Door is Open!</p>
+
+                  <Button
+                    variant="warning"
+                    size="lg"
+                    className="mt-4 fs-3"
+                    onClick={() => {
+                      setShowVictoryModal(false);
+                      setShowVillagersLeftModal(true);
+                    }}
+                  >
+                    🚀 Continue
+                  </Button>
+                </Modal.Body>
+              </Modal>
+
+              {/*villagers modal */}
+
+              <Modal
+                show={showVillagersLeftModal}
+                onHide={() => setShowVillagersLeftModal(false)}
+                centered
+                backdrop="static"
+                keyboard={false}
+              >
+                <Modal.Header className="justify-content-center border-0">
+                  <Modal.Title className="fs-1 text-success">
+                    👨‍🌾 Villagers Safe!
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                  <Image
+                    src={happyVillagersImage} // 👈 Use an image showing happy/safe villagers
+                    alt="Happy Villagers"
+                    fluid
+                    style={{ maxHeight: "140px" }}
+                    className="mb-3"
+                  />
+                  <p className="fs-2 text-primary">Total villagers left:</p>
+                  <h1 className="display-2 text-success">{villagers} 👨‍🌾</h1>
+                  <p className="fs-4">Protect them by playing daily!</p>
+                  <div style={{ fontSize: "2.5rem" }}>🌾💪🌾</div>
+                </Modal.Body>
+                <Modal.Footer className="justify-content-center border-0">
+                  <Button
+                    variant="success"
+                    size="lg"
+                    onClick={() => {
+                      setShowVillagersLeftModal(false);
+                      setShowHighestStarModal(true); // go to next modal
+                    }}
+                  >
+                    Got it! ➡️
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+
               {/* Streak Modal */}
               <Modal
                 show={showHighestStarsModal}
@@ -997,10 +1297,10 @@ function SpellingGame() {
                     className="mb-3"
                   />
                   <p className="fs-2 text-dark">
-                    ⭐ Best: <strong>{highestStars}</strong>
+                    🔋 Best: <strong>{highestStars}</strong>
                   </p>
                   <p className="fs-2 text-primary">
-                    ⭐ Today: <strong>{currentDailyStars}</strong>
+                    🔋 Today: <strong>{currentDailyStars}</strong>
                   </p>
                   <div className="fs-1">🎉🎉🎉</div>
                 </Modal.Body>
@@ -1028,21 +1328,21 @@ function SpellingGame() {
               >
                 <Modal.Header className="justify-content-center border-0">
                   <Modal.Title className="fs-1 text-primary">
-                    🌟 Total Stars!
+                    🔋 Total Power cells!
                   </Modal.Title>
                 </Modal.Header>
                 <Modal.Body className="text-center">
                   <Image
-                    src={starImage_2}
+                    src={starImage}
                     alt="Star Pile"
                     fluid
                     style={{ maxHeight: "130px" }}
                     className="mb-3"
                   />
                   <p className="fs-2">You have</p>
-                  <h1 className="display-3 text-warning">{stars} 🌟</h1>
+                  <h1 className="display-3 text-warning">{stars} 🔋</h1>
                   <p className="fs-4">Let’s collect more!</p>
-                  <div className="fs-1">🌟🌟🌟</div>
+                  <div className="fs-1">🔋 🔋 🔋</div>
                 </Modal.Body>
                 <Modal.Footer className="justify-content-center border-0">
                   <Button
@@ -1058,7 +1358,7 @@ function SpellingGame() {
                 </Modal.Footer>
               </Modal>
 
-              {/* magic number countdown*/}
+              {/* magic Number modal */}
               <Modal
                 show={showCipherCountdownModal}
                 onHide={() => setShowCipherCountdownModal(false)}
@@ -1068,28 +1368,22 @@ function SpellingGame() {
               >
                 <Modal.Header className="justify-content-center border-0">
                   <Modal.Title className="fs-1 text-warning">
-                    ⏳ Almost There!
+                    🎁 Coming Soon!
                   </Modal.Title>
                 </Modal.Header>
                 <Modal.Body className="text-center">
-                  <p className="fs-2">
-                    You’re 1 day away from playing 🎁{" "}
-                    <strong>Magic Number!</strong>
-                  </p>
+                  <p className="fs-2">Not yet... 🔒</p>
                   <Image
-                    src={cipherKeyImage} // or another exciting image like a treasure chest or sparkles
-                    alt="Magic Key"
+                    src={cipherKeyImage}
+                    alt="Magic Game"
                     fluid
                     style={{ maxHeight: "150px" }}
                     className="my-3"
                   />
-                  <p className="fs-4 text-primary">
-                    Keep your 🔥 fire going tomorrow
-                  </p>
                   <p className="fs-3">
-                    And you’ll unlock the surprise game! 🎉
+                    Play tomorrow to unlock the Treasure Pick!
                   </p>
-                  <div style={{ fontSize: "2.5rem" }}>🧙‍♂️🔢🎉</div>
+                  <div style={{ fontSize: "2.5rem" }}>🧙‍♂️➡️🎲</div>
                 </Modal.Body>
                 <Modal.Footer className="justify-content-center border-0">
                   <Button
@@ -1100,7 +1394,7 @@ function SpellingGame() {
                       setShowStreakCelebrationModal(true);
                     }}
                   >
-                    Got it! 👍
+                    OK! 👍
                   </Button>
                 </Modal.Footer>
               </Modal>
@@ -1205,14 +1499,33 @@ function SpellingGame() {
             <Navbar bg="light" className="sticky-top shadow-sm">
               <Container className="justify-content-center">
                 <div className="d-flex gap-4 fs-5">
-                  <span>⭐ {stars}</span>
-                  <span>🗝️ {cipherKeys}</span>
-                  <span>🔥 {streak}</span>
-                  <span>Level {level}</span>
+                  <Button
+                    variant="outline-success"
+                    className="stats"
+                    onClick={saveVillagersWithPowerCells}
+                    disabled={stars === 0 || villagers >= 500}
+                    title="Use power cells to save villagers"
+                  >
+                    🔋 {stars}
+                  </Button>
+
+                  <span className="stats">🗝️ {cipherKeys}</span>
+                  <span className="stats">🔥 {streak}</span>
+                  <span className="stats">Door {level}</span>
+                  <span className="stats">👨‍🌾 {villagers}</span>
                 </div>
               </Container>
             </Navbar>
-            <h2>Listen carefully to the word and spell it:</h2>
+            <h2>Listen carefully to the code and enter it:</h2>
+
+            <Button
+              onClick={() => speakWord(currentWord)}
+              variant="info"
+              className="mb-3"
+              disabled={isSpeakingDisabled}
+            >
+              🔊 Repeat Code {isSpeakingDisabled ? " (Wait...)" : ""}
+            </Button>
 
             {/* Progress Bar */}
             <div className="mb-4">
@@ -1224,14 +1537,6 @@ function SpellingGame() {
               />
             </div>
 
-            <Button
-              onClick={() => speakWord(currentWord)}
-              variant="info"
-              className="mb-3"
-              disabled={isSpeakingDisabled}
-            >
-              🔊 Repeat Word {isSpeakingDisabled ? " (Wait...)" : ""}
-            </Button>
             {imageURL && (
               <div
                 style={{
@@ -1265,7 +1570,7 @@ function SpellingGame() {
 
             {maxHintsBool === true && (
               <Button onClick={revealWord} variant="success" className="mt-2">
-                Reveal Word
+                Reveal Code
               </Button>
             )}
 
@@ -1286,6 +1591,21 @@ function SpellingGame() {
             <Button variant="success" onClick={checkSpelling}>
               Submit
             </Button>
+            {showCipherUnlockOption && (
+              <div className="mt-4">
+                <Alert variant="info" className="fs-5">
+                  🧠 Want help? Use a Cipher Key to unlock this code!
+                </Alert>
+                <Button
+                  variant="danger"
+                  className="fs-5"
+                  onClick={useCipherKey}
+                >
+                  🗝️ Unlock Code With A Cipher Key
+                </Button>
+              </div>
+            )}
+
             <p className="mt-3">{message}</p>
             <p>Incorrect Attempts: {incorrectAttempts} / 6</p>
           </>

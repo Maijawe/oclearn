@@ -26,7 +26,9 @@ const Analytics = require("./analyticsModel");
 app.use(express.static(path.join(__dirname, "../frontend/build")));
 
 const upload = multer({ dest: "uploads/" });
-//mongoose.connect('mongodb://127.0.0.1/aiLMSDatabase', { useNewUrlParser: true});
+/*mongoose.connect("mongodb://127.0.0.1/aiLMSDatabase", {
+  useNewUrlParser: true,
+}); */
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -60,6 +62,7 @@ const updateStreak = async (userId) => {
   if (diffInDays > 1) {
     user.streak = 1;
     user.cipherStreak = 1;
+    user.villagers = Math.max(0, user.villagers - 10); // 🔥 decrease villagers
     streakReset = true;
     console.log("User missed a day. Streak reset to 1.");
   } else if (diffInDays === 1) {
@@ -75,6 +78,47 @@ const updateStreak = async (userId) => {
 
   return { streakReset, user };
 };
+
+app.get("/api/getlevel", authenticateToken, async (req, res) => {
+  try {
+    const learnerId = req.userId; // You get this from your JWT middleware
+
+    const learner = await Learner.findById(learnerId);
+    if (!learner) {
+      return res.status(404).json({ error: "Learner not found" });
+    }
+
+    return res.json({ level: learner.level });
+  } catch (error) {
+    console.error("Error fetching learner level:", error);
+    return res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Use a cipher key to unlock a word
+app.post("/api/use-cipher-key", authenticateToken, async (req, res) => {
+  try {
+    const learner = await Learner.findById(req.userId);
+
+    if (!learner) {
+      return res.status(404).json({ error: "Learner not found" });
+    }
+
+    if (learner.cipherKeys <= 0) {
+      return res.status(400).json({ error: "No cipher keys available" });
+    }
+
+    learner.cipherKeys -= 1;
+    await learner.save();
+
+    res
+      .status(200)
+      .json({ message: "Cipher key used", cipherKeys: learner.cipherKeys });
+  } catch (err) {
+    console.error("Error using cipher key:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 app.get("/api/send-reminders", async (req, res) => {
   console.log("reminder route is triggered");
@@ -144,6 +188,7 @@ app.get("/api/startgame", authenticateToken, async (req, res) => {
       cipherStreak,
       currentDailyStars,
       highestStars,
+      villagers,
     } = learner;
 
     // Fetch level words
@@ -169,6 +214,7 @@ app.get("/api/startgame", authenticateToken, async (req, res) => {
       cipherKeys,
       level,
       highestStars,
+      villagers,
     });
   } catch (error) {
     console.error("Error in /api/startgame:", error);
@@ -203,6 +249,7 @@ app.post("/api/senddata", authenticateToken, async (req, res) => {
           stars: req.body.stars,
           level: req.body.level,
           cipherKeys: req.body.cipherKeys,
+          villagers: req.body.villagers,
         },
         $push: {
           wordsIKnow: { $each: req.body.wordsIknow },
@@ -511,6 +558,7 @@ app.post("/api/register", async (req, res) => {
       pin: hashedPin,
       contacts: parentContact,
       parentEmail: parentEmail,
+      villagers: 500,
     });
 
     await learner.save();

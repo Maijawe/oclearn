@@ -1,0 +1,51 @@
+.fog-map-background {
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+.fog-map-overlay {
+  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
+  min-height: 100vh;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.level-btn {
+  width: 120px;
+  height: 70px;
+  font-size: 1.1rem;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s;
+}
+
+.level-btn:hover {
+  transform: scale(1.1);
+}
+
+.current-level {
+  background-color: #f0ad4e !important;
+  border: 2px solid gold;
+  font-weight: bold;
+}
+
+.glowing-title {
+  text-shadow: 0 0 8px #f0ad4e, 0 0 15px #f0ad4e;
+  font-weight: bold;
+  color: #fff;
+}
+
+.fog-story-card {
+  background-color: rgba(44, 47, 58, 0.85);
+  border: none;
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+
+
