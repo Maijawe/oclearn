@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import logo from "./images/logo.png";
+import logo from "./images/oclearnTwo.png";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
@@ -137,6 +137,9 @@ function Login() {
             >
               Register here
             </Link>
+          </Form.Text>
+          <Form.Text className="text-center d-block mt-3">
+            for more info whatsapp : <strong>069 971 2992</strong>
           </Form.Text>
         </Form>
       </Container>

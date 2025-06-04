@@ -1,8 +1,17 @@
-import React , { useState }  from "react";
-import logo from "./images/logo.png";
-import { Container, Row, Col, Form, Button, Navbar, Nav, Card } from "react-bootstrap";
+import React, { useState } from "react";
+import logo from "./images/oclearnTwo.png";
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+  Navbar,
+  Nav,
+  Card,
+} from "react-bootstrap";
 import "./Home.css";
-import { useNavigate ,Link } from 'react-router-dom';
+import { useNavigate, Link } from "react-router-dom";
 
 function Register() {
   const navigate = useNavigate();
@@ -31,8 +40,7 @@ function Register() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-
-    const { name, username, pin, parentContact,parentEmail } = data;
+    const { name, username, pin, parentContact, parentEmail } = data;
 
     console.log("Name:", `"${name}"`);
     console.log("Username:", `"${username}"`);
@@ -44,40 +52,39 @@ function Register() {
       alert("Please fill in all required fields (name, username, pin)");
       return;
     }
-    
+
     if (!parentContact.trim()) {
       alert("Please enter a parent contact number.");
       return;
     }
-        
+
     if (!parentEmail.trim()) {
       alert("Please enter a parent email.");
       return;
     }
-    
 
     if (!/^\d{4}$/.test(pin.trim())) {
       alert("PIN must be exactly 4 digits.");
       return;
     }
-    
-
-
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json", // ✅ This is required
-        },
-        body: JSON.stringify({
-          name,
-          username,
-          pin,
-          parentContact,
-          parentEmail
-        }),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json", // ✅ This is required
+          },
+          body: JSON.stringify({
+            name,
+            username,
+            pin,
+            parentContact,
+            parentEmail,
+          }),
+        }
+      );
 
       const result = await response.json();
 
@@ -201,7 +208,12 @@ function Register() {
                   />
                 </Form.Group>
 
-                <Button variant="primary" type="submit" className="w-100" disabled={!contract}>
+                <Button
+                  variant="primary"
+                  type="submit"
+                  className="w-100"
+                  disabled={!contract}
+                >
                   Submit
                 </Button>
               </Form>
