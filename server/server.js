@@ -79,6 +79,23 @@ const updateStreak = async (userId) => {
   return { streakReset, user };
 };
 
+// server/routes/yourRoutes.js or similar
+app.get("/api/villagercount", authenticateToken, async (req, res) => {
+  try {
+    const learnerId = req.userId; // assuming auth middleware sets req.user
+    const learner = await Learner.findById(learnerId);
+
+    if (!learner) {
+      return res.status(404).json({ error: "Learner not found" });
+    }
+
+    res.json({ count: learner.villagers });
+  } catch (err) {
+    console.error("Villager count error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 app.get("/api/getlevel", authenticateToken, async (req, res) => {
   try {
     const learnerId = req.userId; // You get this from your JWT middleware
